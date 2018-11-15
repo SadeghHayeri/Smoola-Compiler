@@ -5,49 +5,28 @@ grammar Smoola;
 // options { tokenVocab = SmoolaLexer; }
 
 @members{
-    void P(String str){
-       System.out.print(str);
-    }
-    void PL(String str){
-       System.out.println(str);
-    }
-    void OPL(String str){
-       System.out.println("Operator:" + str);
-    }
-    void L() {
-        System.out.println("");
-    }
 }
 
 program:
     classBlock* EOF;
 
 classBlock:
-    // CLASS (id=IDENTIFIER) (EXTENDS (id=IDENTIFIER) LBRACE
-    CLASS id=IDENTIFIER {P("ClassDec:" + $id.text);} (EXTENDS pid=IDENTIFIER {P("," + $pid.text);})? {L();} LBRACE
+    CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE
         variableDeclaration*
         methodDefinition*
     RBRACE;
 
 variableDeclaration:
-    VAR v=typedVariable SEMI
-    {
-        PL("VarDec:" + $v.varName + "," + $v.varType);
-    };
+    VAR typedVariable SEMI;
 
 methodDefinition:
-    // DEF IDENTIFIER LPAREN (typedVariable (COMMA typedVariable)*)?  RPAREN COLON (type | IDENTIFIER) LBRACE
-    DEF id=IDENTIFIER {P("MethodDec:" + $id.text);} LPAREN (v=typedVariable {P("," + $v.varName);} (COMMA v=typedVariable {P("," + $v.varName);})*)? RPAREN {L();} COLON type LBRACE
+    DEF IDENTIFIER LPAREN (typedVariable (COMMA typedVariable)*)? RPAREN COLON type LBRACE
         variableDeclaration*
         statementBlock*
     RBRACE;
 
-typedVariable returns [String varName, String varType]:
-    vName=IDENTIFIER COLON vType=type
-    {
-        $varName=$vName.text;
-        $varType=$vType.text;
-    };
+typedVariable:
+    IDENTIFIER COLON type;
 
 expression
     : IDENTIFIER
@@ -83,8 +62,8 @@ statementBlock
     ;
 
 statement
-    : IF {PL("Conditional:if");} parExpression THEN statementBlock (ELSE {PL("Conditional:else");}  statementBlock)?
-    | WHILE {PL("Loop:While");} parExpression statementBlock
+    : IF parExpression THEN statementBlock (ELSE statementBlock)?
+    | WHILE parExpression statementBlock
     | expression SEMI
     | RETURN expression SEMI
     | SEMI
