@@ -1,14 +1,14 @@
 package ast.node.expression.Value;
 
-import ast.Type.Type;
+import ast.Type.PrimitiveType.StringType;
 import ast.Visitor;
 
 public class StringValue extends Value {
     private String constant;
 
-    public StringValue(String constant, Type type) {
+    public StringValue(String constant) {
         this.constant = constant;
-        this.type = type;
+        this.type = new StringType();
     }
 
     public String getConstant() {

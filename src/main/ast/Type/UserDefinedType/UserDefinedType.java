@@ -7,6 +7,10 @@ import ast.node.expression.Identifier;
 public class UserDefinedType extends Type {
     private ClassDeclaration classDeclaration;
 
+    public UserDefinedType(Identifier name) {
+        this.name = name;
+    }
+
     public ClassDeclaration getClassDeclaration() {
         return classDeclaration;
     }

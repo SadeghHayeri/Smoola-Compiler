@@ -5,6 +5,10 @@ import ast.Visitor;
 public class NewArray extends Expression {
     private Expression expression;
 
+    public NewArray(Expression expression) {
+        this.expression = expression;
+    }
+
     public Expression getExpression() {
         return expression;
     }

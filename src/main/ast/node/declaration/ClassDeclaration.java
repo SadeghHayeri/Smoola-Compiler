@@ -7,13 +7,12 @@ import java.util.ArrayList;
 
 public class ClassDeclaration extends Declaration{
     private Identifier name;
-    private Identifier parentName;
+    private Identifier parentName = null;
     private ArrayList<VarDeclaration> varDeclarations = new ArrayList<>();
     private ArrayList<MethodDeclaration> methodDeclarations = new ArrayList<>();
 
-    public ClassDeclaration(Identifier name, Identifier parentName) {
+    public ClassDeclaration(Identifier name) {
         this.name = name;
-        this.parentName = parentName;
     }
 
     public Identifier getName() {

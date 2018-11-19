@@ -4,108 +4,148 @@ grammar Smoola;
 // parser grammar SmoolaParser;
 // options { tokenVocab = SmoolaLexer; }
 
-@members{
+@members {
+    void _addArgToMethod(Identifier id, Type type, Declaration method) {
+        VarDeclaration varDeclaration = new VarDeclaration(id, type);
+        method.addArg(varDeclaration);
+    }
+
+    Identifier _ID(Object id) {
+        return new Identifier(id.text);
+    }
 }
 
-program:
-    classBlock* EOF;
-
-classBlock:
-    CLASS IDENTIFIER (EXTENDS IDENTIFIER)? LBRACE
-        variableDeclaration*
-        methodDefinition*
-    RBRACE;
-
-variableDeclaration:
-    VAR typedVariable SEMI;
-
-methodDefinition:
-    DEF IDENTIFIER LPAREN (typedVariable (COMMA typedVariable)*)? RPAREN COLON type LBRACE
-        variableDeclaration*
-        statementBlock*
-    RBRACE;
-
-typedVariable:
-    IDENTIFIER COLON type;
-
-expression
-    : IDENTIFIER
-    | THIS
-    | literal
-    | methodCall
-    | expression DOT methodCall
-    | expression DOT IDENTIFIER
-    | NEW IDENTIFIER arguments
-    | NEW arrayType LBRACK expression RBRACK
-    | LPAREN expression RPAREN
-    | expression LBRACK expression RBRACK
-    | uop=uneriOperators expression
-    | expression bop=(STAR | SLASH) expression
-    | expression bop=(PLUS | MINUS) expression
-    | expression bop=(GT | LT) expression
-    | expression bop=(EQUAL | NOTEQUAL) expression
-    | expression bop=AND expression
-    | expression bop=OR expression
-    | expression bop=ASSIGN expression
+program returns [Program p]
+    : { $p = new Program(); }
+    (classBlock
+    {
+        $p.addClass($classBlock.classDeclaration);
+        if( $classBlock.isMainClass )
+            $p.setMainClass($classBlock.classDeclaration);
+    }
+    )*
+    EOF
     ;
 
-parExpression:
-    LPAREN expression RPAREN;
+classBlock returns [ClassDeclaration classDeclaration, Boolean isMainClass]:
+    { $isMainClass = false; }
+    CLASS IDENTIFIER { $classDeclaration = new ClassDeclaration(_ID(IDENTIFIER)) }
+    (EXTENDS IDENTIFIER { $classDeclaration.setParentName(_ID(IDENTIFIER)) })? LBRACE
+        (vd=variableDeclaration
+            { $classDeclaration.addVarDeclaration(vd.varDeclaration) }
+        )*
+        (md=methodDefinition
+            { $classDeclaration.addMethodDeclaration(md.methodDeclaration); }
+            { $isMainClass = $isMainClass || $md.isMainMethod }
+        )*
+    RBRACE;
 
-statementBlock
+variableDeclaration returns [VarDeclaration varDeclaration]:
+    VAR typedVariable SEMI
+    {
+        $varDeclaration = new VarDeclaration(
+            $typedVariable.varIdentifier,
+            $typedVariable.varType
+        )
+    }
+    ;
+
+methodDefinition returns [Declaration methodDeclaration, Boolean isMainMethod]
+    :
+    DEF IDENTIFIER
+    {
+        $isMainMethod = ($IDENTIFIER.text == "main");
+        $methodDeclaration = $isMainMethod ?
+            new MainMethodDeclaration() :
+            new MethodDeclaration(_ID($IDENTIFIER.text));
+    }
+    LPAREN (typedVariable { _addArgToMethod($typedVariable.varIdentifier, $typedVariable.varType, $methodDeclaration); }
+    ( COMMA typedVariable { _addArgToMethod($typedVariable.varIdentifier, $typedVariable.varType, $methodDeclaration); })* )?
+    RPAREN COLON type LBRACE { $methodDeclaration.setReturnType($type.varType); }
+        ( variableDeclaration { $methodDeclaration.addLocalVar($variableDeclaration.varDeclaration); } )*
+        ( statementBlock { $methodDeclaration.addStatement($statementBlock.stmt); } )*
+        RETURN expression SEMI { $methodDeclaration.setReturnValue($expression.exp); }
+    RBRACE
+    ;
+
+typedVariable returns [Identifier varIdentifier, Type varType]
+    : IDENTIFIER COLON type
+    {
+        $varIdentifier = _ID($IDENTIFIER);
+        $varType = $type.varType;
+    }
+    ;
+
+expression returns [Expression exp]
+    : IDENTIFIER                                            { $exp = _ID($IDENTIFIER); }
+    | THIS                                                  { $exp = new This(); }
+    | literal                                               { $exp = literal.value; }
+    | e=expression DOT id=IDENTIFIER { $exp = MethodCall($e.exp, _ID(id) } arguments[$exp]
+    | expression DOT LENGTH                                 { $exp = new Length($expression.exp) }
+    | NEW IDENTIFIER LPAREN RPAREN                          { $exp = new NewClass(_ID($IDENTIFIER)) }
+    | NEW INT LBRACK expression RBRACK                      { $exp = new NewArray($expression.exp) }
+    | LPAREN expression RPAREN                              { $exp = expression.exp }
+    | e1=expression LBRACK e2=expression RBRACK             { $exp = new ArrayCall($e1.exp, $e2.exp) }
+    | uop=(BANG | MINUS) expression                         { $exp = new UnaryExpression(($uop == $BANG)?UnaryOperator.not : UnaryOperator.minus, $expression.exp) }
+    | e1=expression bop=(STAR | SLASH) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $STAR) ? BinaryOperator.mult : BinaryOperator.div) }
+    | e1=expression bop=(PLUS | MINUS) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $PLUS) ? BinaryOperator.add : BinaryOperator.sub) }
+    | e1=expression bop=(GT | LT) e2=expression             { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $GT) ? BinaryOperator.gt : BinaryOperator.lt) }
+    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression    { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $EQUAL) ? BinaryOperator.eq : BinaryOperator.neq) }
+    | e1=expression bop=AND e2=expression                   { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.and) }
+    | e1=expression bop=OR e2=expression                    { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.or) }
+    | e1=expression bop=ASSIGN e2=expression                { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.assign) }
+    ;
+
+arguments [MethodCall mc]:
+    LPAREN (expression {$mc.addArg($expression.exp);} (COMMA expression {$mc.addArg($expression.exp);})*)? RPAREN;
+
+statementBlock returns [Statement stmt]
     :
     LBRACE
-        variableDeclaration*
-        statementBlock*
+        { $stmt = new Block(); }
+        (statementBlock
+            { $stmt.addStatement($statementBlock.stmt); }
+        )*
     RBRACE
-    | statement
+    | statement { $stmt = $statement.stmt }
     ;
 
-statement
-    : IF parExpression THEN statementBlock (ELSE statementBlock)?
-    | WHILE parExpression statementBlock
-    | expression SEMI
-    | RETURN expression SEMI
-    | SEMI
+statement returns [Statement stmt]
+    : IF e=parExpression THEN s1=statementBlock { $stmt = new Conditional($e.exp, $s1.stmt); } (ELSE s2=statementBlock { $stmt.setAlternativeBody($s2.stmt); })?
+    | WHILE e=parExpression s=statementBlock { $stmt = new While($e.exp, s.stmt); }
+    | expression SEMI  { $stmt = new Statement(); }
+    | SEMI { $stmt = new Statement(); }
     ;
 
-methodCall
-    : IDENTIFIER arguments
-    | THIS arguments
+parExpression returns [Expression exp]:
+    LPAREN expression RPAREN { $exp = $expression.exp };
+
+literal returns [Value value]
+    : DECIMAL_LITERAL { $value = new IntValue($DECIMAL_LITERAL.int) }
+    | STRING_LITERAL { $value = new StringValue($STRING_LITERAL.text) }
+    | booleanLiteral { $value = new BooleanValue($booleanLiteral.value) }
     ;
 
-expressionList:
-    expression (COMMA expression)*;
+booleanLiteral returns [Boolean value]
+    : TRUE { $value = true }
+    | FALSE { $value = false }
+    ;
 
-arguments:
-    LPAREN expressionList? RPAREN;
+type returns [Type varType]
+    : primitiveType { $varType = $primitiveType.varType }
+    | userDefineType { $varType = $userDefineType.varType }
+    ;
 
-literal:
-    DECIMAL_LITERAL | STRING_LITERAL | booleanLiteral;
+primitiveType returns [Type varType]
+    : INT { $varType = new IntType() }
+    | STRING { $varType = new StringType() }
+    | BOOLEAN { $varType = new BooleanType() }
+    | INT LBRACK RBRACK { $varType = new ArrayType() }
+    ;
 
-booleanLiteral:
-    TRUE | FALSE;
-
-primitiveType:
-    INT | STRING | BOOLEAN | arrayType LBRACK RBRACK;
-
-type:
-   primitiveType | IDENTIFIER;
-
-arrayType:
-    INT;
-
-relationalOperators:
-    EQUAL | NOTEQUAL | GT | LT;
-
-arithmeticOperators:
-    PLUS | MINUS | STAR | SLASH;
-
-logicalOperators:
-    AND | OR;
-
-uneriOperators:
-    BANG | MINUS | PLUS;
+userDefineType returns [Type varType]
+    : IDENTIFIER { $varType = new UserDefinedType( _ID($IDENTIFIER.text) ) }
+    ;
 
 ///////////////////////////////////////////// SmoolaLexer.g4 //////////////////////////////////////////////
 // lexer grammar SmoolaLexer;
@@ -127,6 +167,7 @@ STRING:             'string';
 INT:                'int';
 FALSE:              'false';
 TRUE:               'true';
+LENGTH:             'length';
 
 // Separators
 LPAREN:             '(';
