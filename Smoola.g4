@@ -29,14 +29,14 @@ program returns [Program p]
 
 classBlock returns [ClassDeclaration classDeclaration, Boolean isMainClass]:
     { $isMainClass = false; }
-    CLASS IDENTIFIER { $classDeclaration = new ClassDeclaration(_ID(IDENTIFIER)) }
-    (EXTENDS IDENTIFIER { $classDeclaration.setParentName(_ID(IDENTIFIER)) })? LBRACE
+    CLASS IDENTIFIER { $classDeclaration = new ClassDeclaration(_ID(IDENTIFIER)); }
+    (EXTENDS IDENTIFIER { $classDeclaration.setParentName(_ID(IDENTIFIER)); })? LBRACE
         (vd=variableDeclaration
-            { $classDeclaration.addVarDeclaration(vd.varDeclaration) }
+            { $classDeclaration.addVarDeclaration(vd.varDeclaration); }
         )*
         (md=methodDefinition
             { $classDeclaration.addMethodDeclaration(md.methodDeclaration); }
-            { $isMainClass = $isMainClass || $md.isMainMethod }
+            { $isMainClass = $isMainClass || $md.isMainMethod; }
         )*
     RBRACE;
 
@@ -46,7 +46,7 @@ variableDeclaration returns [VarDeclaration varDeclaration]:
         $varDeclaration = new VarDeclaration(
             $typedVariable.varIdentifier,
             $typedVariable.varType
-        )
+        );
     }
     ;
 
@@ -80,24 +80,24 @@ expression returns [Expression exp]
     : IDENTIFIER                                            { $exp = _ID($IDENTIFIER); }
     | THIS                                                  { $exp = new This(); }
     | literal                                               { $exp = literal.value; }
-    | e=expression DOT id=IDENTIFIER { $exp = MethodCall($e.exp, _ID(id) } arguments[$exp]
-    | expression DOT LENGTH                                 { $exp = new Length($expression.exp) }
-    | NEW IDENTIFIER LPAREN RPAREN                          { $exp = new NewClass(_ID($IDENTIFIER)) }
-    | NEW INT LBRACK expression RBRACK                      { $exp = new NewArray($expression.exp) }
-    | LPAREN expression RPAREN                              { $exp = expression.exp }
-    | e1=expression LBRACK e2=expression RBRACK             { $exp = new ArrayCall($e1.exp, $e2.exp) }
-    | uop=(BANG | MINUS) expression                         { $exp = new UnaryExpression(($uop == $BANG)?UnaryOperator.not : UnaryOperator.minus, $expression.exp) }
-    | e1=expression bop=(STAR | SLASH) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $STAR) ? BinaryOperator.mult : BinaryOperator.div) }
-    | e1=expression bop=(PLUS | MINUS) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $PLUS) ? BinaryOperator.add : BinaryOperator.sub) }
-    | e1=expression bop=(GT | LT) e2=expression             { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $GT) ? BinaryOperator.gt : BinaryOperator.lt) }
-    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression    { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $EQUAL) ? BinaryOperator.eq : BinaryOperator.neq) }
-    | e1=expression bop=AND e2=expression                   { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.and) }
-    | e1=expression bop=OR e2=expression                    { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.or) }
-    | e1=expression bop=ASSIGN e2=expression                { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.assign) }
+    | e=expression DOT id=IDENTIFIER { $exp = MethodCall($e.exp, _ID(id)); } arguments[$exp]
+    | expression DOT LENGTH                                 { $exp = new Length($expression.exp); }
+    | NEW IDENTIFIER LPAREN RPAREN                          { $exp = new NewClass(_ID($IDENTIFIER)); }
+    | NEW INT LBRACK expression RBRACK                      { $exp = new NewArray($expression.exp); }
+    | LPAREN expression RPAREN                              { $exp = expression.exp; }
+    | e1=expression LBRACK e2=expression RBRACK             { $exp = new ArrayCall($e1.exp, $e2.exp); }
+    | uop=(BANG | MINUS) expression                         { $exp = new UnaryExpression(($uop == $BANG)?UnaryOperator.not : UnaryOperator.minus, $expression.exp); }
+    | e1=expression bop=(STAR | SLASH) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $STAR) ? BinaryOperator.mult : BinaryOperator.div); }
+    | e1=expression bop=(PLUS | MINUS) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $PLUS) ? BinaryOperator.add : BinaryOperator.sub); }
+    | e1=expression bop=(GT | LT) e2=expression             { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $GT) ? BinaryOperator.gt : BinaryOperator.lt); }
+    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression    { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop == $EQUAL) ? BinaryOperator.eq : BinaryOperator.neq); }
+    | e1=expression bop=AND e2=expression                   { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.and); }
+    | e1=expression bop=OR e2=expression                    { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.or); }
+    | e1=expression bop=ASSIGN e2=expression                { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.assign); }
     ;
 
 arguments [MethodCall mc]:
-    LPAREN (expression {$mc.addArg($expression.exp);} (COMMA expression {$mc.addArg($expression.exp);})*)? RPAREN;
+    LPAREN (expression { $mc.addArg($expression.exp); } (COMMA expression { $mc.addArg($expression.exp); })*)? RPAREN;
 
 statementBlock returns [Statement stmt]
     :
@@ -107,7 +107,7 @@ statementBlock returns [Statement stmt]
             { $stmt.addStatement($statementBlock.stmt); }
         )*
     RBRACE
-    | statement { $stmt = $statement.stmt }
+    | statement { $stmt = $statement.stmt; }
     ;
 
 statement returns [Statement stmt]
@@ -118,33 +118,33 @@ statement returns [Statement stmt]
     ;
 
 parExpression returns [Expression exp]:
-    LPAREN expression RPAREN { $exp = $expression.exp };
+    LPAREN expression RPAREN { $exp = $expression.exp; };
 
 literal returns [Value value]
-    : DECIMAL_LITERAL { $value = new IntValue($DECIMAL_LITERAL.int) }
-    | STRING_LITERAL { $value = new StringValue($STRING_LITERAL.text) }
-    | booleanLiteral { $value = new BooleanValue($booleanLiteral.value) }
+    : DECIMAL_LITERAL { $value = new IntValue($DECIMAL_LITERAL.int); }
+    | STRING_LITERAL { $value = new StringValue($STRING_LITERAL.text); }
+    | booleanLiteral { $value = new BooleanValue($booleanLiteral.value); }
     ;
 
 booleanLiteral returns [Boolean value]
-    : TRUE { $value = true }
-    | FALSE { $value = false }
+    : TRUE { $value = true; }
+    | FALSE { $value = false; }
     ;
 
 type returns [Type varType]
-    : primitiveType { $varType = $primitiveType.varType }
-    | userDefineType { $varType = $userDefineType.varType }
+    : primitiveType { $varType = $primitiveType.varType; }
+    | userDefineType { $varType = $userDefineType.varType; }
     ;
 
 primitiveType returns [Type varType]
-    : INT { $varType = new IntType() }
-    | STRING { $varType = new StringType() }
-    | BOOLEAN { $varType = new BooleanType() }
-    | INT LBRACK RBRACK { $varType = new ArrayType() }
+    : INT { $varType = new IntType(); }
+    | STRING { $varType = new StringType(); }
+    | BOOLEAN { $varType = new BooleanType(); }
+    | INT LBRACK RBRACK { $varType = new ArrayType(); }
     ;
 
 userDefineType returns [Type varType]
-    : IDENTIFIER { $varType = new UserDefinedType( _ID($IDENTIFIER.text) ) }
+    : IDENTIFIER { $varType = new UserDefinedType(_ID($IDENTIFIER.text)); }
     ;
 
 ///////////////////////////////////////////// SmoolaLexer.g4 //////////////////////////////////////////////
