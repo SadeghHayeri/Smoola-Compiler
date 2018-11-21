@@ -13,10 +13,6 @@ public class Program {
         return mainClass;
     }
 
-    public void setMainClass(ClassDeclaration mainClass) {
-        this.mainClass = mainClass;
-    }
-
     public void addClass(ClassDeclaration classDeclaration) {
         classes.add(classDeclaration);
     }

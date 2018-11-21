@@ -29,18 +29,11 @@ grammar Smoola;
 
 program returns [Program p]
     : { $p = new Program(); }
-    (classBlock
-    {
-        $p.addClass($classBlock.classDeclaration);
-        if( $classBlock.isMainClass )
-            $p.setMainClass($classBlock.classDeclaration);
-    }
-    )*
+    (classBlock { $p.addClass($classBlock.classDeclaration); })*
     EOF
     ;
 
-classBlock returns [ClassDeclaration classDeclaration, Boolean isMainClass]:
-    { $isMainClass = false; }
+classBlock returns [ClassDeclaration classDeclaration]:
     CLASS IDENTIFIER { $classDeclaration = new ClassDeclaration(_ID($IDENTIFIER.text)); }
     (EXTENDS IDENTIFIER { $classDeclaration.setParentName(_ID($IDENTIFIER.text)); })? LBRACE
         (vd=variableDeclaration
@@ -48,7 +41,6 @@ classBlock returns [ClassDeclaration classDeclaration, Boolean isMainClass]:
         )*
         (md=methodDefinition
             { $classDeclaration.addMethodDeclaration($md.methodDeclaration); }
-            { $isMainClass = $isMainClass || $md.isMainMethod; }
         )*
     RBRACE;
 
@@ -62,15 +54,9 @@ variableDeclaration returns [VarDeclaration varDeclaration]:
     }
     ;
 
-methodDefinition returns [MethodDeclaration methodDeclaration, Boolean isMainMethod]
+methodDefinition returns [MethodDeclaration methodDeclaration]
     :
-    DEF IDENTIFIER
-    {
-        $isMainMethod = ($IDENTIFIER.text == "main");
-        $methodDeclaration = $isMainMethod ?
-            new MainMethodDeclaration() :
-            new MethodDeclaration(_ID($IDENTIFIER.text));
-    }
+    DEF IDENTIFIER { $methodDeclaration = new MethodDeclaration(_ID($IDENTIFIER.text)); }
     LPAREN (typedVariable { _addArgToMethod($typedVariable.varIdentifier, $typedVariable.varType, $methodDeclaration); }
     ( COMMA typedVariable { _addArgToMethod($typedVariable.varIdentifier, $typedVariable.varType, $methodDeclaration); })* )?
     RPAREN COLON type LBRACE { $methodDeclaration.setReturnType($type.varType); }
