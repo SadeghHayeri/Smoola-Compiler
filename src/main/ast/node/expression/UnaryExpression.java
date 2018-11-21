@@ -32,8 +32,9 @@ public class UnaryExpression extends Expression {
     public String toString() {
         return "UnaryExpression " + unaryOperator.name();
     }
-
+    @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
 }
+

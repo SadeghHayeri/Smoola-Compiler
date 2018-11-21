@@ -1,9 +1,7 @@
 package ast;
 
-import ast.node.Node;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
-import ast.node.declaration.MainMethodDeclaration;
 import ast.node.declaration.MethodDeclaration;
 import ast.node.declaration.VarDeclaration;
 import ast.node.expression.*;
@@ -13,10 +11,6 @@ import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 
 public class VisitorImpl implements Visitor {
-    @Override
-    public void visit(Node node) {
-        //TODO: implement appropriate visit functionality
-    }
 
     @Override
     public void visit(Program program) {
@@ -30,11 +24,6 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
-        //TODO: implement appropriate visit functionality
-    }
-
-    @Override
-    public void visit(MainMethodDeclaration mainMethodDeclaration) {
         //TODO: implement appropriate visit functionality
     }
 
