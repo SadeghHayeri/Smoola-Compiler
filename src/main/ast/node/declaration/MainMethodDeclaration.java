@@ -2,13 +2,18 @@ package ast.node.declaration;
 
 import ast.Visitor;
 import ast.node.expression.Expression;
+import ast.node.expression.Identifier;
 import ast.node.statement.Statement;
 
 import java.util.ArrayList;
 
-public class MainMethodDeclaration extends Declaration{
+public class MainMethodDeclaration extends MethodDeclaration {
     private Expression returnValue;
     private ArrayList<Statement> body = new ArrayList<>();
+
+    public MainMethodDeclaration() {
+        super(new Identifier("main"));
+    }
 
     public Expression getReturnValue() {
         return returnValue;
