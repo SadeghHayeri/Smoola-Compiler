@@ -37,7 +37,3 @@ public class UnaryExpression extends Expression {
         visitor.visit(this);
     }
 }
-enum UnaryOperator {
-    not, minus
-}
-

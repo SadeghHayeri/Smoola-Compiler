@@ -47,6 +47,4 @@ public class BinaryExpression extends Expression {
         visitor.visit(this);
     }
 }
-enum BinaryOperator {
-    add, sub, mult, div, and, or, eq, neq, lt, gt, assign
-}
+
