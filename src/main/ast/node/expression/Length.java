@@ -9,9 +9,7 @@ public class Length extends Expression {
         this.expression = expression;
     }
 
-    public Expression getExpression() {
-        return expression;
-    }
+    public Expression getExpression() { return expression; }
 
     public void setExpression(Expression expression) {
         this.expression = expression;

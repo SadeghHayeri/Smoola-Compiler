@@ -23,6 +23,10 @@ public class ClassDeclaration extends Declaration{
         this.name = name;
     }
 
+    public Boolean hasParent() {
+        return this.parentName != null;
+    }
+
     public Identifier getParentName() {
         return parentName;
     }

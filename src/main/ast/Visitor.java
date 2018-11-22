@@ -1,5 +1,6 @@
 package ast;
 
+import ast.Type.Type;
 import ast.node.Program;
 import ast.node.declaration.*;
 import ast.node.expression.*;
@@ -8,6 +9,9 @@ import ast.node.statement.*;
 
 
 public interface Visitor {
+    void init(Program program);
+
+    // Program
     void visit (Program program);
 
     //Declarations
@@ -36,9 +40,8 @@ public interface Visitor {
     void visit(While loop);
     void visit(Write write);
 
+    void visit(SemiStatement semiStatement);
 
-
-
-
-
+    //Other
+    void visit(Type type);
 }

@@ -11,6 +11,7 @@ public class Conditional extends Statement {
     public Conditional(Expression expression, Statement consequenceBody) {
         this.expression = expression;
         this.consequenceBody = consequenceBody;
+        this.alternativeBody = null;
     }
 
     public Expression getExpression() {
@@ -27,6 +28,10 @@ public class Conditional extends Statement {
 
     public void setConsequenceBody(Statement consequenceBody) {
         this.consequenceBody = consequenceBody;
+    }
+
+    public Boolean hasAlternativeBody() {
+        return alternativeBody != null;
     }
 
     public Statement getAlternativeBody() {

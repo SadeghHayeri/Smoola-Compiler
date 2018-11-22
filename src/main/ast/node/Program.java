@@ -7,11 +7,6 @@ import java.util.List;
 
 public class Program {
     private ArrayList<ClassDeclaration> classes = new ArrayList<>();
-    private ClassDeclaration mainClass;
-
-    public ClassDeclaration getMainClass() {
-        return mainClass;
-    }
 
     public void addClass(ClassDeclaration classDeclaration) {
         classes.add(classDeclaration);
