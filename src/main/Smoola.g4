@@ -27,10 +27,14 @@ grammar Smoola;
     }
 }
 
-program returns [Program p]
-    : { $p = new Program(); }
-    (classBlock { $p.addClass($classBlock.classDeclaration); })*
+program
+    : { Program p = new Program(); }
+    (classBlock { p.addClass($classBlock.classDeclaration); })*
     EOF
+    {
+        Visitor visitor = new VisitorImpl();
+        visitor.init(p);
+    }
     ;
 
 classBlock returns [ClassDeclaration classDeclaration]:
@@ -78,8 +82,8 @@ expression returns [Expression exp]
     : IDENTIFIER                                            { $exp = _ID($IDENTIFIER.text); }
     | THIS                                                  { $exp = new This(); }
     | literal                                               { $exp = $literal.value; }
+    | e=expression DOT LENGTH                               { $exp = new Length($e.exp); }
     | e=expression DOT id=IDENTIFIER { MethodCall mc = new MethodCall($e.exp, _ID($id.text)); } arguments[mc] { $exp = mc; }
-    | expression DOT LENGTH                                 { $exp = new Length($expression.exp); }
     | NEW IDENTIFIER LPAREN RPAREN                          { $exp = new NewClass(_ID($IDENTIFIER.text)); }
     | NEW INT LBRACK expression RBRACK                      { $exp = new NewArray($expression.exp); }
     | LPAREN expression RPAREN                              { $exp = $expression.exp; }
@@ -112,7 +116,8 @@ statementBlock returns [Statement stmt]
 statement returns [Statement stmt]
     : IF e=parExpression THEN s1=statementBlock { Conditional con = new Conditional($e.exp, $s1.stmt); } (ELSE s2=statementBlock { con.setAlternativeBody($s2.stmt); })? { $stmt = con; }
     | WHILE e=parExpression s=statementBlock { $stmt = new While($e.exp, $s.stmt); }
-    | expression SEMI  { $stmt = new Statement(); }
+    | WRITELN LPAREN expression RPAREN { $stmt = new Write($expression.exp); }
+    | expression SEMI  { $stmt = new SemiStatement($expression.exp); }
     | SEMI { $stmt = new Statement(); }
     ;
 
@@ -167,6 +172,7 @@ INT:                'int';
 FALSE:              'false';
 TRUE:               'true';
 LENGTH:             'length';
+WRITELN:            'writeln';
 
 // Separators
 LPAREN:             '(';
