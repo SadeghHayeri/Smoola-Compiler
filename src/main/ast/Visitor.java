@@ -41,7 +41,4 @@ public interface Visitor {
     void visit(Write write);
 
     void visit(SemiStatement semiStatement);
-
-    //Other
-    void visit(Type type);
 }
