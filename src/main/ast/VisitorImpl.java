@@ -10,22 +10,36 @@ import ast.node.expression.Value.BooleanValue;
 import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
+import exceptions.BadArraySizeException;
+import exceptions.RedefinitionOfClassException;
+import symbolTable.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class VisitorImpl implements Visitor {
 
     private enum Passes {
-        ERROR_CHECK, PRE_ORDER_PRINT
+        PRE_PROCESS, ERROR_CHECK, PRE_ORDER_PRINT
     }
 
     private Boolean hasError;
     private Passes currentPass;
 
+    private HashMap<String, SymbolTable> classes;
+
     @Override
     public void init(Program program) {
+
+        this.hasError = false;
+        this.currentPass = Passes.PRE_PROCESS;
+        program.accept(this);
+
+        //////////////////////////
+
         // Check errors
         this.currentPass = Passes.ERROR_CHECK;
-        this.hasError = false;
-        program.accept(this);
+
 
         // Print pre-order
         if(!this.hasError) {
@@ -37,6 +51,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Program program) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                this.classes = new HashMap<>();
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -51,6 +68,18 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(ClassDeclaration classDeclaration) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                try {
+                    String className = classDeclaration.getName().getName();
+                    boolean redefinition = this.classes.containsKey(className);
+                    if(redefinition) throw new RedefinitionOfClassException();
+                    SymbolTable.top = new SymbolTable();
+                    this.classes.put(className, SymbolTable.top);
+                } catch (RedefinitionOfClassException e) {
+                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    this.hasError = true;
+                }
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -65,11 +94,26 @@ public class VisitorImpl implements Visitor {
             varDeclaration.accept(this);
         for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations())
             methodDeclaration.accept(this);
+
+        SymbolTable.top = null;
     }
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                try {
+                    String methodName = methodDeclaration.getName().getName();
+                    ArrayList<Type> argsType = methodDeclaration.getArgsType();
+                    SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
+                    SymbolTable.top.put(method);
+                } catch (ItemAlreadyExistsException e) {
+                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    this.hasError = true;
+                } finally {
+                    SymbolTable.push(new SymbolTable(SymbolTable.top));
+                }
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -80,17 +124,29 @@ public class VisitorImpl implements Visitor {
         methodDeclaration.getName().accept(this);
         for(VarDeclaration varDeclaration : methodDeclaration.getArgs())
             varDeclaration.accept(this);
-        methodDeclaration.getReturnType().accept(this);
         for(VarDeclaration varDeclaration : methodDeclaration.getLocalVars())
             varDeclaration.accept(this);
         for(Statement statement : methodDeclaration.getBody())
             statement.accept(this);
         methodDeclaration.getReturnValue().accept(this);
+
+        SymbolTable.pop();
     }
 
     @Override
     public void visit(VarDeclaration varDeclaration) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                try {
+                    String varName = varDeclaration.getIdentifier().getName();
+                    Type varType = varDeclaration.getType();
+                    SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
+                    SymbolTable.top.put(variable);
+                } catch (ItemAlreadyExistsException e) {
+                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    this.hasError = true;
+                }
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -99,12 +155,14 @@ public class VisitorImpl implements Visitor {
         }
 
         varDeclaration.getIdentifier().accept(this);
-        varDeclaration.getType().accept(this);
     }
 
     @Override
     public void visit(ArrayCall arrayCall) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -119,6 +177,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -133,6 +194,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Identifier identifier) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -144,6 +208,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Length length) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -157,6 +224,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -173,6 +243,20 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewArray newArray) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                try {
+                    Expression exp = newArray.getExpression();
+                    boolean isNumberIndex = exp instanceof IntValue;
+                    if(isNumberIndex) {
+                        int value = ((IntValue)exp).getConstant();
+                        if(value <= 0)
+                            throw new BadArraySizeException();
+                    }
+                } catch (BadArraySizeException e) {
+                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    this.hasError = true;
+                }
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -186,6 +270,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewClass newClass) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -199,6 +286,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(This instance) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -210,6 +300,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(UnaryExpression unaryExpression) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -223,6 +316,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BooleanValue value) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -234,6 +330,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(IntValue value) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -245,6 +344,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(StringValue value) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -256,6 +358,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Assign assign) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -270,6 +375,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Block block) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -284,6 +392,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Conditional conditional) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -300,6 +411,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(While loop) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -314,6 +428,9 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Write write) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -327,24 +444,16 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(SemiStatement semiStatement) {
         switch (currentPass) {
+            case PRE_PROCESS:
+                return;
+//                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(semiStatement.toString());
+//                System.out.println(semiStatement.toString());
                 break;
         }
 
         semiStatement.getInside().accept(this);
-    }
-
-    @Override
-    public void visit(Type type) {
-        switch (currentPass) {
-            case ERROR_CHECK:
-                break;
-            case PRE_ORDER_PRINT:
-                System.out.println(type.toString());
-                break;
-        }
     }
 }
