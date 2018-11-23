@@ -88,14 +88,14 @@ expression returns [Expression exp]
     | NEW INT LBRACK expression RBRACK                      { $exp = new NewArray($expression.exp); }
     | LPAREN expression RPAREN                              { $exp = $expression.exp; }
     | e1=expression LBRACK e2=expression RBRACK             { $exp = new ArrayCall($e1.exp, $e2.exp); }
-    | uop=(BANG | MINUS) expression                         { $exp = new UnaryExpression(($uop.text == "!") ? UnaryOperator.not : UnaryOperator.minus, $expression.exp); }
-    | e1=expression bop=(STAR | SLASH) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop.text == "*") ? BinaryOperator.mult : BinaryOperator.div); }
-    | e1=expression bop=(PLUS | MINUS) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop.text == "+") ? BinaryOperator.add : BinaryOperator.sub); }
-    | e1=expression bop=(GT | LT) e2=expression             { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop.text == ">") ? BinaryOperator.gt : BinaryOperator.lt); }
-    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression    { $exp = new BinaryExpression($e1.exp, $e2.exp, ($bop.text == "==") ? BinaryOperator.eq : BinaryOperator.neq); }
+    | uop=(BANG | MINUS) expression                         { $exp = new UnaryExpression($bop.text.equals("!") ? UnaryOperator.not : UnaryOperator.minus, $expression.exp); }
+    | e1=expression bop=(STAR | SLASH) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, $bop.text.equals("*") ? BinaryOperator.mult : BinaryOperator.div); }
+    | e1=expression bop=(PLUS | MINUS) e2=expression        { $exp = new BinaryExpression($e1.exp, $e2.exp, $bop.text.equals("+") ? BinaryOperator.add : BinaryOperator.sub); }
+    | e1=expression bop=(GT | LT) e2=expression             { $exp = new BinaryExpression($e1.exp, $e2.exp, $bop.text.equals(">") ? BinaryOperator.gt : BinaryOperator.lt); }
+    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression    { $exp = new BinaryExpression($e1.exp, $e2.exp, $bop.text.equals("==") ? BinaryOperator.eq : BinaryOperator.neq); }
     | e1=expression bop=AND e2=expression                   { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.and); }
     | e1=expression bop=OR e2=expression                    { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.or); }
-    | e1=expression bop=ASSIGN e2=expression                { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.assign); }
+    | <assoc=right> e1=expression bop=ASSIGN e2=expression  { $exp = new BinaryExpression($e1.exp, $e2.exp, BinaryOperator.assign); }
     ;
 
 arguments [MethodCall mc]:
@@ -114,11 +114,19 @@ statementBlock returns [Statement stmt]
     ;
 
 statement returns [Statement stmt]
-    : IF e=parExpression THEN s1=statementBlock { Conditional con = new Conditional($e.exp, $s1.stmt); } (ELSE s2=statementBlock { con.setAlternativeBody($s2.stmt); })? { $stmt = con; }
-    | WHILE e=parExpression s=statementBlock { $stmt = new While($e.exp, $s.stmt); }
+    : IF pe=parExpression THEN s1=statementBlock { Conditional con = new Conditional($pe.exp, $s1.stmt); } (ELSE s2=statementBlock { con.setAlternativeBody($s2.stmt); })? { $stmt = con; }
+    | WHILE pe=parExpression s=statementBlock { $stmt = new While($pe.exp, $s.stmt); }
     | WRITELN LPAREN expression RPAREN { $stmt = new Write($expression.exp); }
-    | expression SEMI  { $stmt = new SemiStatement($expression.exp); }
     | SEMI { $stmt = new Statement(); }
+    | expression SEMI {
+        if($expression.exp instanceof BinaryExpression &&
+        ((BinaryExpression)$expression.exp).getBinaryOperator() == BinaryOperator.assign) {
+            BinaryExpression be = (BinaryExpression)($expression.exp);
+            $stmt = new Assign(be.getLeft(), be.getRight());
+        } else {
+            $stmt = new SemiStatement($expression.exp);
+        }
+    }
     ;
 
 parExpression returns [Expression exp]:
