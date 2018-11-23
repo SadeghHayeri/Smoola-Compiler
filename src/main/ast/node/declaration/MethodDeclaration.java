@@ -48,6 +48,13 @@ public class MethodDeclaration extends Declaration {
         return args;
     }
 
+    public ArrayList<Type> getArgsType() {
+        ArrayList<Type> argsType = new ArrayList<>();
+        for(VarDeclaration varDeclaration : this.getArgs())
+            argsType.add(varDeclaration.getType());
+        return argsType;
+    }
+
     public void addArg(VarDeclaration arg) {
         this.args.add(arg);
     }
