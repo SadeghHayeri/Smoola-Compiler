@@ -1,10 +1,8 @@
 package ast.Type;
 
 import ast.Visitor;
+import ast.node.Node;
 
-public abstract class Type {
+public abstract class Type extends Node {
     public abstract String toString();
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
-    }
 }
