@@ -1,4 +1,7 @@
-
+*.class
+*.tokens
+Smoola*.java
+*.interp
 # Created by https://www.gitignore.io/api/intellij,visualstudiocode
 
 ### Intellij ###
