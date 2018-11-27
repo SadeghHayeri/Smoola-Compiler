@@ -26,8 +26,6 @@ public class VisitorImpl implements Visitor {
     private Boolean hasError;
     private Passes currentPass;
 
-    private HashMap<String, SymbolTable> classes;
-
     @Override
     public void init(Program program) {
 
@@ -52,7 +50,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Program program) {
         switch (currentPass) {
             case PRE_PROCESS:
-                this.classes = new HashMap<>();
+                SymbolTable.top = new SymbolTable();
                 break;
             case ERROR_CHECK:
                 break;
@@ -71,12 +69,15 @@ public class VisitorImpl implements Visitor {
             case PRE_PROCESS:
                 try {
                     String className = classDeclaration.getName().getName();
-                    boolean redefinition = this.classes.containsKey(className);
-                    if(redefinition) throw new RedefinitionOfClassException();
-                    SymbolTable.top = new SymbolTable();
-                    this.classes.put(className, SymbolTable.top);
-                } catch (RedefinitionOfClassException e) {
-                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+
+                    SymbolTableClassItem classItem = classDeclaration.hasParent() ?
+                            new SymbolTableClassItem(className, classDeclaration.getParentName().getName()) :
+                            new SymbolTableClassItem(className);
+
+                    SymbolTable.top.put(classItem);
+                    SymbolTable.push(new SymbolTable());
+                } catch (ItemAlreadyExistsException e) {
+                    System.out.println("EEEEEEER: redefination class");///////////////////////////////////////////////////////////////////////////////
                     this.hasError = true;
                 }
                 break;
@@ -95,7 +96,7 @@ public class VisitorImpl implements Visitor {
         for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations())
             methodDeclaration.accept(this);
 
-        SymbolTable.top = null;
+        SymbolTable.pop();
     }
 
     @Override
@@ -108,7 +109,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    System.out.println("EEEEEEER: redefination method");///////////////////////////////////////////////////////////////////////////////
                     this.hasError = true;
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
@@ -143,7 +144,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    System.out.println("EEEEEEER: redefination variable");///////////////////////////////////////////////////////////////////////////////
                     this.hasError = true;
                 }
                 break;
@@ -253,7 +254,7 @@ public class VisitorImpl implements Visitor {
                             throw new BadArraySizeException();
                     }
                 } catch (BadArraySizeException e) {
-                    System.out.println();///////////////////////////////////////////////////////////////////////////////
+                    System.out.println("EEEEEEER: bad array size");///////////////////////////////////////////////////////////////////////////////
                     this.hasError = true;
                 }
                 break;
