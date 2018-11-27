@@ -7,6 +7,10 @@ import java.util.ArrayList;
 public class Block extends Statement {
     private ArrayList<Statement> body = new ArrayList<>();
 
+    public Block(int line) {
+        super(line);
+    }
+
     public ArrayList<Statement> getBody() {
         return body;
     }

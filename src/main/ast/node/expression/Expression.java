@@ -4,8 +4,12 @@ import ast.Type.Type;
 import ast.Visitor;
 import ast.node.Node;
 
-public abstract class Expression extends Node{
+public abstract class Expression extends Node {
     private Type type;
+
+    public Expression(int line) {
+        super(line);
+    }
 
     public Type getType() {
         return type;

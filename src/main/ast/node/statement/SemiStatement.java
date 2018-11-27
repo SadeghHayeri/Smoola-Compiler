@@ -7,7 +7,8 @@ import ast.node.expression.Expression;
 public class SemiStatement extends Statement {
     private Expression inside;
 
-    public SemiStatement(Expression inside) {
+    public SemiStatement(int line, Expression inside) {
+        super(line);
         this.inside = inside;
     }
 

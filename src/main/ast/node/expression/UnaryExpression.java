@@ -7,7 +7,8 @@ public class UnaryExpression extends Expression {
     private UnaryOperator unaryOperator;
     private Expression value;
 
-    public UnaryExpression(UnaryOperator unaryOperator, Expression value) {
+    public UnaryExpression(int line, UnaryOperator unaryOperator, Expression value) {
+        super(line);
         this.unaryOperator = unaryOperator;
         this.value = value;
     }

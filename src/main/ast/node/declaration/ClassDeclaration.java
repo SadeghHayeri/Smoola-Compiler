@@ -11,7 +11,8 @@ public class ClassDeclaration extends Declaration{
     private ArrayList<VarDeclaration> varDeclarations = new ArrayList<>();
     private ArrayList<MethodDeclaration> methodDeclarations = new ArrayList<>();
 
-    public ClassDeclaration(Identifier name) {
+    public ClassDeclaration(int line, Identifier name) {
+        super(line);
         this.name = name;
     }
 

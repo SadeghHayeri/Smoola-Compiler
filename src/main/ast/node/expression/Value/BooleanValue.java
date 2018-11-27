@@ -6,7 +6,8 @@ import ast.Visitor;
 public class BooleanValue extends Value {
     private boolean constant;
 
-    public BooleanValue(boolean constant) {
+    public BooleanValue(int line, boolean constant) {
+        super(line);
         this.constant = constant;
         this.type = new BooleanType();
     }

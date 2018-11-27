@@ -5,7 +5,8 @@ import ast.Visitor;
 public class NewClass extends Expression {
     private Identifier className;
 
-    public NewClass(Identifier className) {
+    public NewClass(int line, Identifier className) {
+        super(line);
         this.className = className;
     }
 

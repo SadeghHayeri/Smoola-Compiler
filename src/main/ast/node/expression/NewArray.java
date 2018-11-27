@@ -5,7 +5,8 @@ import ast.Visitor;
 public class NewArray extends Expression {
     private Expression expression;
 
-    public NewArray(Expression expression) {
+    public NewArray(int line, Expression expression) {
+        super(line);
         this.expression = expression;
     }
 

@@ -5,6 +5,7 @@ import ast.Visitor;
 
 public class ArrayType extends Type {
     private int size;
+
     @Override
     public String toString() {
         return "int[]";

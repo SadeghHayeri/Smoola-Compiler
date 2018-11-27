@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import ast.node.declaration.ClassDeclaration;
 import java.util.List;
 
-public class Program {
+public class Program extends Node {
     private ArrayList<ClassDeclaration> classes = new ArrayList<>();
+
+    public Program(int line) {
+        super(line);
+    }
 
     public void addClass(ClassDeclaration classDeclaration) {
         classes.add(classDeclaration);

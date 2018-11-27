@@ -6,7 +6,8 @@ import ast.Visitor;
 public class StringValue extends Value {
     private String constant;
 
-    public StringValue(String constant) {
+    public StringValue(int line, String constant) {
+        super(line);
         this.constant = constant;
         this.type = new StringType();
     }

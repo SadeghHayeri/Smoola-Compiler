@@ -16,7 +16,8 @@ public class MethodDeclaration extends Declaration {
     private ArrayList<VarDeclaration> localVars = new ArrayList<>();
     private ArrayList<Statement> body = new ArrayList<>();
 
-    public MethodDeclaration(Identifier name) {
+    public MethodDeclaration(int line, Identifier name) {
+        super(line);
         this.name = name;
     }
 

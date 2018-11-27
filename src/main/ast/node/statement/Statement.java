@@ -4,6 +4,9 @@ import ast.Visitor;
 import ast.node.Node;
 
 public class Statement extends Node {
+    public Statement(int line) {
+        super(line);
+    }
 
     @Override
     public String toString() {

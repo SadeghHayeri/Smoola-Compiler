@@ -8,7 +8,8 @@ public class BinaryExpression extends Expression {
     private Expression right;
     private BinaryOperator binaryOperator;
 
-    public BinaryExpression(Expression left, Expression right, BinaryOperator binaryOperator) {
+    public BinaryExpression(int line, Expression left, Expression right, BinaryOperator binaryOperator) {
+        super(line);
         this.left = left;
         this.right = right;
         this.binaryOperator = binaryOperator;

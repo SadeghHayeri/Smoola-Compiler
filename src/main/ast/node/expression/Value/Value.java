@@ -5,6 +5,10 @@ import ast.Visitor;
 import ast.node.expression.Expression;
 
 public abstract class Value extends Expression {
+    public Value(int line) {
+        super(line);
+    }
+
     public Type getType() {
         return type;
     }

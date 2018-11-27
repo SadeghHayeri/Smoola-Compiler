@@ -8,7 +8,8 @@ public class Conditional extends Statement {
     private Statement consequenceBody;
     private Statement alternativeBody;
 
-    public Conditional(Expression expression, Statement consequenceBody) {
+    public Conditional(int line, Expression expression, Statement consequenceBody) {
+        super(line);
         this.expression = expression;
         this.consequenceBody = consequenceBody;
         this.alternativeBody = null;

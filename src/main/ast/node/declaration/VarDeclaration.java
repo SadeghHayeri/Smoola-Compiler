@@ -8,7 +8,8 @@ public class VarDeclaration extends Declaration {
     private Identifier identifier;
     private Type type;
 
-    public VarDeclaration(Identifier identifier, Type type) {
+    public VarDeclaration(int line, Identifier identifier, Type type) {
+        super(line);
         this.identifier = identifier;
         this.type = type;
     }

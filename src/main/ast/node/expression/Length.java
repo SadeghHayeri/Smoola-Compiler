@@ -5,7 +5,8 @@ import ast.Visitor;
 public class Length extends Expression {
     private Expression expression;
 
-    public Length(Expression expression) {
+    public Length(int line, Expression expression) {
+        super(line);
         this.expression = expression;
     }
 
