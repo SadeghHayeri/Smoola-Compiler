@@ -27,7 +27,6 @@ public class VisitorImpl implements Visitor {
     private Boolean hasError;
     private Passes currentPass;
 
-
     @Override
     public void init(Program program) {
 
@@ -171,8 +170,7 @@ public class VisitorImpl implements Visitor {
     public void visit(ArrayCall arrayCall) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -188,8 +186,7 @@ public class VisitorImpl implements Visitor {
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -205,8 +202,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Identifier identifier) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -219,8 +215,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Length length) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -235,8 +230,7 @@ public class VisitorImpl implements Visitor {
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -281,8 +275,7 @@ public class VisitorImpl implements Visitor {
     public void visit(NewClass newClass) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -297,8 +290,7 @@ public class VisitorImpl implements Visitor {
     public void visit(This instance) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -311,8 +303,7 @@ public class VisitorImpl implements Visitor {
     public void visit(UnaryExpression unaryExpression) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -327,8 +318,7 @@ public class VisitorImpl implements Visitor {
     public void visit(BooleanValue value) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -341,8 +331,7 @@ public class VisitorImpl implements Visitor {
     public void visit(IntValue value) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -355,8 +344,7 @@ public class VisitorImpl implements Visitor {
     public void visit(StringValue value) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -369,8 +357,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Assign assign) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -386,8 +373,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Block block) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -403,8 +389,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Conditional conditional) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -422,8 +407,7 @@ public class VisitorImpl implements Visitor {
     public void visit(While loop) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -439,8 +423,7 @@ public class VisitorImpl implements Visitor {
     public void visit(Write write) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
@@ -455,8 +438,7 @@ public class VisitorImpl implements Visitor {
     public void visit(SemiStatement semiStatement) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                return;
-//                break;
+                break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
