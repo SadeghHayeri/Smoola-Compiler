@@ -12,6 +12,10 @@ public class Program extends Node {
         super(line);
     }
 
+    public boolean hasAnyClass() {
+        return !this.classes.isEmpty();
+    }
+
     public void addClass(ClassDeclaration classDeclaration) {
         classes.add(classDeclaration);
     }

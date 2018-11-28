@@ -5,7 +5,7 @@ import ast.node.expression.Identifier;
 
 import java.util.ArrayList;
 
-public class ClassDeclaration extends Declaration{
+public class ClassDeclaration extends Declaration {
     private Identifier name;
     private Identifier parentName = null;
     private ArrayList<VarDeclaration> varDeclarations = new ArrayList<>();

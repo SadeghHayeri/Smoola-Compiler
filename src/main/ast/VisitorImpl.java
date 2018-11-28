@@ -11,16 +11,17 @@ import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import exceptions.BadArraySizeException;
-import exceptions.RedefinitionOfClassException;
+import exceptions.NoClassExistException;
 import symbolTable.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class VisitorImpl implements Visitor {
 
     private enum Passes {
-        PRE_PROCESS, ERROR_CHECK, PRE_ORDER_PRINT
+        FILL_SYMBOL_TABLE,
+        ERROR_CHECK,
+        PRE_ORDER_PRINT
     }
 
     private Boolean hasError;
@@ -30,7 +31,7 @@ public class VisitorImpl implements Visitor {
     public void init(Program program) {
 
         this.hasError = false;
-        this.currentPass = Passes.PRE_PROCESS;
+        this.currentPass = Passes.FILL_SYMBOL_TABLE;
         program.accept(this);
 
         //////////////////////////
@@ -49,8 +50,14 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Program program) {
         switch (currentPass) {
-            case PRE_PROCESS:
-                SymbolTable.top = new SymbolTable();
+            case FILL_SYMBOL_TABLE:
+                try {
+                    SymbolTable.push(new SymbolTable());
+                    if (!program.hasAnyClass()) throw new NoClassExistException();
+                } catch (NoClassExistException e) {
+                    System.out.println("Line:" + program.getLine() + ":No class exists in the program");
+                    this.hasError = true;
+                }
                 break;
             case ERROR_CHECK:
                 break;
@@ -66,7 +73,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(ClassDeclaration classDeclaration) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 try {
                     String className = classDeclaration.getName().getName();
 
@@ -75,10 +82,11 @@ public class VisitorImpl implements Visitor {
                             new SymbolTableClassItem(className);
 
                     SymbolTable.top.put(classItem);
-                    SymbolTable.push(new SymbolTable());
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println("EEEEEEER: redefination class");///////////////////////////////////////////////////////////////////////////////
+                    System.out.println(String.format("Line:%d:Redefinition of class %s", classDeclaration.getLine(), classDeclaration.getName().getName()));
                     this.hasError = true;
+                } finally {
+                    SymbolTable.push(new SymbolTable());
                 }
                 break;
             case ERROR_CHECK:
@@ -96,20 +104,20 @@ public class VisitorImpl implements Visitor {
         for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations())
             methodDeclaration.accept(this);
 
-        SymbolTable.pop();
+        if(currentPass == Passes.FILL_SYMBOL_TABLE) SymbolTable.pop();
     }
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 try {
                     String methodName = methodDeclaration.getName().getName();
                     ArrayList<Type> argsType = methodDeclaration.getArgsType();
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println("EEEEEEER: redefination method");///////////////////////////////////////////////////////////////////////////////
+                    System.out.println(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
                     this.hasError = true;
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
@@ -131,20 +139,20 @@ public class VisitorImpl implements Visitor {
             statement.accept(this);
         methodDeclaration.getReturnValue().accept(this);
 
-        SymbolTable.pop();
+        if(currentPass == Passes.FILL_SYMBOL_TABLE)SymbolTable.pop();
     }
 
     @Override
     public void visit(VarDeclaration varDeclaration) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 try {
                     String varName = varDeclaration.getIdentifier().getName();
                     Type varType = varDeclaration.getType();
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println("EEEEEEER: redefination variable");///////////////////////////////////////////////////////////////////////////////
+                    System.out.println(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
                     this.hasError = true;
                 }
                 break;
@@ -161,7 +169,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(ArrayCall arrayCall) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -178,7 +186,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -195,7 +203,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Identifier identifier) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -209,7 +217,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Length length) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -225,7 +233,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -244,7 +252,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewArray newArray) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 try {
                     Expression exp = newArray.getExpression();
                     boolean isNumberIndex = exp instanceof IntValue;
@@ -254,7 +262,7 @@ public class VisitorImpl implements Visitor {
                             throw new BadArraySizeException();
                     }
                 } catch (BadArraySizeException e) {
-                    System.out.println("EEEEEEER: bad array size");///////////////////////////////////////////////////////////////////////////////
+                    System.out.println(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
                     this.hasError = true;
                 }
                 break;
@@ -271,7 +279,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewClass newClass) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -287,7 +295,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(This instance) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -301,7 +309,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(UnaryExpression unaryExpression) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -317,7 +325,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BooleanValue value) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -331,7 +339,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(IntValue value) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -345,7 +353,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(StringValue value) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -359,7 +367,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Assign assign) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -376,7 +384,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Block block) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -393,7 +401,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Conditional conditional) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -412,7 +420,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(While loop) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -429,7 +437,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Write write) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
@@ -445,7 +453,7 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(SemiStatement semiStatement) {
         switch (currentPass) {
-            case PRE_PROCESS:
+            case FILL_SYMBOL_TABLE:
                 return;
 //                break;
             case ERROR_CHECK:
