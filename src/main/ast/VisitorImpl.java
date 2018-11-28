@@ -27,6 +27,7 @@ public class VisitorImpl implements Visitor {
     private Boolean hasError;
     private Passes currentPass;
 
+
     @Override
     public void init(Program program) {
 
@@ -55,14 +56,14 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.push(new SymbolTable());
                     if (!program.hasAnyClass()) throw new NoClassExistException();
                 } catch (NoClassExistException e) {
-                    System.out.println("Line:" + program.getLine() + ":No class exists in the program");
+                    Util.info("Line:" + program.getLine() + ":No class exists in the program");
                     this.hasError = true;
                 }
                 break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(program.toString());
+                Util.info(program.toString());
                 break;
         }
 
@@ -83,7 +84,7 @@ public class VisitorImpl implements Visitor {
 
                     SymbolTable.top.put(classItem);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println(String.format("Line:%d:Redefinition of class %s", classDeclaration.getLine(), classDeclaration.getName().getName()));
+                    Util.error(String.format("Line:%d:Redefinition of class %s", classDeclaration.getLine(), classDeclaration.getName().getName()));
                     this.hasError = true;
                 } finally {
                     SymbolTable.push(new SymbolTable());
@@ -92,7 +93,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(classDeclaration.toString());
+                Util.info(classDeclaration.toString());
                 break;
         }
 
@@ -117,7 +118,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
+                    Util.info(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
                     this.hasError = true;
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
@@ -126,7 +127,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(methodDeclaration.toString());
+                Util.info(methodDeclaration.toString());
                 break;
         }
 
@@ -152,14 +153,14 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    System.out.println(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
+                    Util.info(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
                     this.hasError = true;
                 }
                 break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(varDeclaration.toString());
+                Util.info(varDeclaration.toString());
                 break;
         }
 
@@ -175,7 +176,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(arrayCall.toString());
+                Util.info(arrayCall.toString());
                 break;
         }
 
@@ -192,7 +193,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(binaryExpression.toString());
+                Util.info(binaryExpression.toString());
                 break;
         }
 
@@ -209,7 +210,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(identifier.toString());
+                Util.info(identifier.toString());
                 break;
         }
     }
@@ -223,7 +224,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(length.toString());
+                Util.info(length.toString());
                 break;
         }
 
@@ -239,7 +240,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(methodCall.toString());
+                Util.info(methodCall.toString());
                 break;
         }
 
@@ -262,14 +263,14 @@ public class VisitorImpl implements Visitor {
                             throw new BadArraySizeException();
                     }
                 } catch (BadArraySizeException e) {
-                    System.out.println(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
+                    Util.info(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
                     this.hasError = true;
                 }
                 break;
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(newArray.toString());
+                Util.info(newArray.toString());
                 break;
         }
 
@@ -285,7 +286,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(newClass.toString());
+                Util.info(newClass.toString());
                 break;
         }
 
@@ -301,7 +302,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(instance.toString());
+                Util.info(instance.toString());
                 break;
         }
     }
@@ -315,7 +316,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(unaryExpression.toString());
+                Util.info(unaryExpression.toString());
                 break;
         }
 
@@ -331,7 +332,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(value.toString());
+                Util.info(value.toString());
                 break;
         }
     }
@@ -345,7 +346,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(value.toString());
+                Util.info(value.toString());
                 break;
         }
     }
@@ -359,7 +360,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(value.toString());
+                Util.info(value.toString());
                 break;
         }
     }
@@ -373,7 +374,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(assign.toString());
+                Util.info(assign.toString());
                 break;
         }
 
@@ -390,7 +391,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(block.toString());
+                Util.info(block.toString());
                 break;
         }
 
@@ -407,7 +408,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(conditional.toString());
+                Util.info(conditional.toString());
                 break;
         }
 
@@ -426,7 +427,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(loop.toString());
+                Util.info(loop.toString());
                 break;
         }
 
@@ -443,7 +444,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-                System.out.println(write.toString());
+                Util.info(write.toString());
                 break;
         }
 
@@ -459,7 +460,7 @@ public class VisitorImpl implements Visitor {
             case ERROR_CHECK:
                 break;
             case PRE_ORDER_PRINT:
-//                System.out.println(semiStatement.toString());
+//                Util.info();(semiStatement.toString());
                 break;
         }
 
