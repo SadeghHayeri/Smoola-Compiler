@@ -56,7 +56,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.push(new SymbolTable());
                     if (!program.hasAnyClass()) throw new NoClassExistException();
                 } catch (NoClassExistException e) {
-                    Util.info("Line:" + program.getLine() + ":No class exists in the program");
+                    Util.info(String.format("Line:%d:No class exists in the program", program.getLine()));
                     this.hasError = true;
                 }
                 break;
