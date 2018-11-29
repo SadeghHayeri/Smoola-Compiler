@@ -12,6 +12,14 @@ public class SemiStatement extends Statement {
         this.inside = inside;
     }
 
+    public SemiStatement(int line) {
+        super(line);
+    }
+
+    public boolean isEmpty() {
+        return inside == null;
+    }
+
     public Expression getInside() {
         return inside;
     }

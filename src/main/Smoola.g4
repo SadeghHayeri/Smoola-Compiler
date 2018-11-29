@@ -113,16 +113,8 @@ statement returns [Statement stmt]
     : IF pe=parExpression THEN s1=statementBlock { Conditional con = new Conditional($IF.line, $pe.exp, $s1.stmt); } (ELSE s2=statementBlock { con.setAlternativeBody($s2.stmt); })? { $stmt = con; }
     | WHILE pe=parExpression s=statementBlock { $stmt = new While($WHILE.line, $pe.exp, $s.stmt); }
     | WRITELN LPAREN expression RPAREN { $stmt = new Write($WRITELN.line, $expression.exp); }
-    | SEMI { $stmt = new Statement($SEMI.line); }
-    | expression SEMI {
-        if($expression.exp instanceof BinaryExpression &&
-        ((BinaryExpression)$expression.exp).getBinaryOperator() == BinaryOperator.assign) {
-            BinaryExpression be = (BinaryExpression)($expression.exp);
-            $stmt = new Assign($SEMI.line, be.getLeft(), be.getRight());
-        } else {
-            $stmt = new SemiStatement($SEMI.line, $expression.exp);
-        }
-    }
+    | expression SEMI { $stmt = new SemiStatement($SEMI.line, $expression.exp); }
+    | SEMI { $stmt = new SemiStatement($SEMI.line); }
     ;
 
 parExpression returns [Expression exp]:

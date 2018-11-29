@@ -435,6 +435,17 @@ public class VisitorImpl implements Visitor {
                 break;
         }
 
-        semiStatement.getInside().accept(this);
+        if(!semiStatement.isEmpty()) {
+            Expression expression = semiStatement.getInside();
+            if (expression instanceof BinaryExpression) {
+                BinaryExpression binaryExpression = (BinaryExpression) semiStatement.getInside();
+                if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
+                    Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
+                    assign.accept(this);
+                    return;
+                }
+            }
+        }
+//        errors.add(new BadStatement(semiStatement));
     }
 }
