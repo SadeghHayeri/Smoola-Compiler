@@ -81,6 +81,10 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.top.put(classItem);
                 } catch (ItemAlreadyExistsException e) {
                     errors.add(new ClassRedefinition(classDeclaration));
+                    String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
+                    Identifier newId = new Identifier(classDeclaration.getName().getLine(), newName);
+                    classDeclaration.setName(newId);
+                    classDeclaration.accept(this);
                 } finally {
                     SymbolTable.push(new SymbolTable());
                 }
@@ -114,6 +118,10 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
                     errors.add(new MethodRedefinition(methodDeclaration));
+                    String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
+                    Identifier newId = new Identifier(methodDeclaration.getName().getLine(), newName);
+                    methodDeclaration.setName(newId);
+                    methodDeclaration.accept(this);
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
                 }

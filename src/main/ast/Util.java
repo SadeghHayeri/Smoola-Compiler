@@ -1,5 +1,7 @@
 package ast;
 
+import java.util.UUID;
+
 public class Util {
 
     public static boolean colorful = false;
@@ -26,5 +28,9 @@ public class Util {
             System.out.println(ANSI_GREEN + message + ANSI_RESET);
         else
             System.out.println(message);
+    }
+
+    public static String uniqueRandomString() {
+        return UUID.randomUUID().toString();
     }
 }
