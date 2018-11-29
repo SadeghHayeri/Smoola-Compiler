@@ -55,7 +55,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.push(new SymbolTable());
                     if (!program.hasAnyClass()) throw new NoClassExistException();
                 } catch (NoClassExistException e) {
-                    Util.info(String.format("Line:%d:No class exists in the program", program.getLine()));
+                    Util.error(String.format("Line:%d:No class exists in the program", program.getLine()));
                     this.hasError = true;
                 }
                 break;
@@ -117,7 +117,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
-                    Util.info(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
+                    Util.error(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
                     this.hasError = true;
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
@@ -152,7 +152,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    Util.info(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
+                    Util.error(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
                     this.hasError = true;
                 }
                 break;
@@ -257,7 +257,7 @@ public class VisitorImpl implements Visitor {
                             throw new BadArraySizeException();
                     }
                 } catch (BadArraySizeException e) {
-                    Util.info(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
+                    Util.error(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
                     this.hasError = true;
                 }
                 break;
