@@ -10,8 +10,8 @@ import ast.node.expression.Value.BooleanValue;
 import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
-import exceptions.BadArraySizeException;
-import exceptions.NoClassExistException;
+import errors.*;
+import errors.Error;
 import symbolTable.*;
 
 import java.util.ArrayList;
@@ -24,40 +24,37 @@ public class VisitorImpl implements Visitor {
         PRE_ORDER_PRINT
     }
 
-    private Boolean hasError;
+    private ArrayList<Error> errors = new ArrayList<>();
     private Passes currentPass;
 
     @Override
     public void init(Program program) {
 
-        this.hasError = false;
         this.currentPass = Passes.FILL_SYMBOL_TABLE;
         program.accept(this);
-
-        //////////////////////////
 
         // Check errors
         this.currentPass = Passes.ERROR_CHECK;
 
-
-        // Print pre-order
-        if(!this.hasError) {
+        if(!errors.isEmpty()) {
+            //TODO: sort by line number
+            for(Error error : errors)
+                Util.error(error.toString());
+        } else {
             this.currentPass = Passes.PRE_ORDER_PRINT;
             program.accept(this);
         }
+
+
     }
 
     @Override
     public void visit(Program program) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                try {
-                    SymbolTable.push(new SymbolTable());
-                    if (!program.hasAnyClass()) throw new NoClassExistException();
-                } catch (NoClassExistException e) {
-                    Util.error(String.format("Line:%d:No class exists in the program", program.getLine()));
-                    this.hasError = true;
-                }
+                SymbolTable.push(new SymbolTable());
+                if(!program.hasAnyClass())
+                    errors.add(new NoClassExist());
                 break;
             case ERROR_CHECK:
                 break;
@@ -83,8 +80,7 @@ public class VisitorImpl implements Visitor {
 
                     SymbolTable.top.put(classItem);
                 } catch (ItemAlreadyExistsException e) {
-                    Util.error(String.format("Line:%d:Redefinition of class %s", classDeclaration.getLine(), classDeclaration.getName().getName()));
-                    this.hasError = true;
+                    errors.add(new ClassRedefinition(classDeclaration));
                 } finally {
                     SymbolTable.push(new SymbolTable());
                 }
@@ -117,8 +113,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
-                    Util.error(String.format("Line:%d:Redefinition of method %s", methodDeclaration.getLine(), methodDeclaration.getName().getName()));
-                    this.hasError = true;
+                    errors.add(new MethodRedefinition(methodDeclaration));
                 } finally {
                     SymbolTable.push(new SymbolTable(SymbolTable.top));
                 }
@@ -152,8 +147,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    Util.error(String.format("Line:%d:Redefinition of variable %s", varDeclaration.getLine(), varDeclaration.getIdentifier().getName()));
-                    this.hasError = true;
+                    errors.add(new VariableRedefinition(varDeclaration));
                 }
                 break;
             case ERROR_CHECK:
@@ -248,17 +242,12 @@ public class VisitorImpl implements Visitor {
     public void visit(NewArray newArray) {
         switch (currentPass) {
             case FILL_SYMBOL_TABLE:
-                try {
-                    Expression exp = newArray.getExpression();
-                    boolean isNumberIndex = exp instanceof IntValue;
-                    if(isNumberIndex) {
-                        int value = ((IntValue)exp).getConstant();
-                        if(value <= 0)
-                            throw new BadArraySizeException();
-                    }
-                } catch (BadArraySizeException e) {
-                    Util.error(String.format("Line:%d:Array length should not be zero or negative", newArray.getLine()));
-                    this.hasError = true;
+                Expression exp = newArray.getExpression();
+                boolean isNumberIndex = exp instanceof IntValue;
+                if(isNumberIndex) {
+                    int value = ((IntValue)exp).getConstant();
+                    if(value <= 0)
+                        errors.add(new BadArraySize(newArray));
                 }
                 break;
             case ERROR_CHECK:

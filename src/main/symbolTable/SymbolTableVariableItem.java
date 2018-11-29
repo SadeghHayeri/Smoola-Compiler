@@ -1,7 +1,6 @@
 package symbolTable;
 
 import ast.Type.Type;
-import exceptions.RedefinitionOfVariableException;
 
 public class SymbolTableVariableItem extends SymbolTableItem {
     private int index;
