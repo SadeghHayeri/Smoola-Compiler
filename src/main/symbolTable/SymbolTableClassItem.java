@@ -22,6 +22,6 @@ public class SymbolTableClassItem extends SymbolTableItem {
 
     @Override
     public String getKey() {
-        return this.name;
+        return "_CLASS_" + this.name;
     }
 }

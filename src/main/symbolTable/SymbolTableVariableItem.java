@@ -1,9 +1,9 @@
 package symbolTable;
 
 import ast.Type.Type;
+import exceptions.RedefinitionOfVariableException;
 
 public class SymbolTableVariableItem extends SymbolTableItem {
-
     private int index;
     protected Type type;
     private static int INDEX = 0;
@@ -24,12 +24,10 @@ public class SymbolTableVariableItem extends SymbolTableItem {
 
     @Override
     public String getKey() {
-        return name;
+        return "_VAR_" + this.name;
     }
 
     public int getIndex() {
         return index;
     }
-
-
 }
