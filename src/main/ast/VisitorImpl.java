@@ -141,6 +141,7 @@ public class VisitorImpl implements Visitor {
                     Identifier newId = new Identifier(methodDeclaration.getName().getLine(), newName);
                     methodDeclaration.setName(newId);
                     methodDeclaration.accept(this);
+                    return;
                 }
                 break;
             case PRE_ORDER_PRINT:
