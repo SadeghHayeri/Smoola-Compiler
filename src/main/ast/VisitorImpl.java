@@ -270,12 +270,26 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Expression exp = newArray.getExpression();
-                boolean isNumberIndex = exp instanceof IntValue;
-                if(isNumberIndex) {
+                if(exp instanceof IntValue) {
                     int value = ((IntValue)exp).getConstant();
-                    if(value <= 0)
+                    if(value == 0)
                         errors.add(new BadArraySize(newArray));
                 }
+
+                //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
+                boolean isUnary = exp instanceof UnaryExpression;
+                if(isUnary) {
+                    UnaryExpression unaryExp = (UnaryExpression)exp;
+                    if(unaryExp.getUnaryOperator() == UnaryOperator.minus) {
+                        Expression innerExp = unaryExp.getValue();
+                        if(innerExp instanceof IntValue) {
+                            int value = ((IntValue)innerExp).getConstant();
+                            if(value >= 0)
+                                errors.add(new BadArraySize(newArray));
+                        }
+                    }
+                }
+                /////////////////////////////////////////////////////////////////////////////////
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(newArray.toString());
