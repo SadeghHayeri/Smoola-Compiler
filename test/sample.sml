@@ -1,36 +1,15 @@
-class j extends d {
-    def main() : int {
-        return 0;
-    }
-}
 
-class c {
-    def main() : int {
-        return 0;
-    }
-}
+class Test {
+	def func(arg1 : int, arg2 : int) : int {
+	    var x : int;
+	    var y : MYclass;
 
-class a extends b {
-    var x : int;
+	    a == b;
+	    if(a / b) then;
 
-    def x() : int {
-        var x : int;
-        return 0;
-    }
-
-    def main() : int {
-        return 0;
-    }
-}
-
-class b extends c {
-
-}
-
-class d extends f {
-
-}
-
-class f {
-
+		while(a) {
+		    a == b;
+		}
+		return 0;
+	}
 }

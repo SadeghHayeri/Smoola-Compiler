@@ -10,6 +10,453 @@ class IDENTIFIER {
     }
 }
 
+class MainClass {
+    def main(): int {
+        writeln(new SecondMain().main());
+        return 0;
+    }
+}
+
+class Test extends x {
+    def main(): int {
+        writeln((new BabyTest()).testMethod(1, 2));
+        return 0;
+    }
+}
+
+class Test2 {
+  def main() : int {
+    arr = new int[0];
+    return 0;
+  }
+}
+
+class Test {
+  def main() : int {
+    return 0;
+  }
+}
+
+class IDENTIFIER {
+    def main(): int {
+        return new SecondMain().main();
+    }
+}
+
+class SecondMain{
+    var arr: int[];
+    var x: int;
+    var y: boolean;
+    def main(): int{
+        x=(2+(3||4))/7;
+        arr=new int[10];
+        if(arr.length==10*x) then
+            y=true;
+        else
+            y=false;
+        return y;
+    }
+}
+
+class MainClass {
+    def main(): int {
+        return new Test2().method2();
+    }
+}
+
+class Test1{
+    var i: int;
+    def method(): string{
+        var j: string;
+        j = "hello world!";
+        return j;
+
+    }
+}
+
+class Test2 extends Test1{
+    def method2(): int{
+        i=10;
+        return i;
+    }
+}
+
+class MainClass{
+    def main(): int{
+        return 0;
+    }
+}
+
+class Test1{
+    var i: int;
+    def salam(): string{
+        return "salam";
+
+    }
+    def testMethod(): int{
+        i=10;
+        writeln(this.salam());
+        return 0;
+    }
+}
+
+class Test {
+  def main() : int {
+    x = ((((3)))) || 000005 + 7&&08 - 0;
+    return 0;
+  }
+}
+
+class Test {
+  def main() : int {
+    return 0;
+  }
+}
+
+class IDENTIFIER extends SomeThingElse{
+    def main(): int {
+        return new SecondMain().main();
+    }
+}
+
+class SecondMain{
+    var arr: int[];
+    var x: int;
+    var y: boolean;
+    def main(): int{
+        x=(2+(3||4))/7;
+        arr=new int[10];
+        if(arr.length==10*x) then
+            y=true;
+        else
+            y=false;
+        return y;
+    }
+}
+
+class MainClass {
+    def main(): int {
+        return new Test2().method2();
+    }
+}
+
+class Test1{
+    var i: int;
+    def method(): string{
+        var j: string;
+        j = "hello world!";
+        return j;
+
+    }
+}
+
+class Test2 extends Test1{
+    def method2(): int{
+        i=10;
+        return i;
+    }
+}
+
+class MainClass{
+    def main(): int{
+        return 0;
+    }
+}
+
+class Test1{
+    var i: int;
+    def salam(): string{
+        return "salam";
+
+    }
+    def testMethod(): int{
+        i=10;
+        writeln(this.salam());
+        return 0;
+    }
+}
+
+class MainClass{
+    def main(): int{
+        writeln(new Math().factorial(5));
+        return 0;
+    }
+}
+
+class Test {
+	def main() : int {
+		{
+			writeln("hi hi hi 12  ^ 7 *$(%*)(%@($) / \ | ");
+			{
+				x = ((((3)))) || 000005 + 7&&08 - 0;
+				x = ((((3)))) || 000005 + 7&&08 - 0;
+				{
+					x = ((((3)))) || 000005 + 7&&08 - 0;
+					x = ((((3)))) || 000005 + 7&&08 - 0;
+
+				}
+				x = ((((3)))) || 000005 + 7&&08 - 0;
+			}
+			x = ((((3)))) || 000005 + 7&&08 - 0;
+		}
+		x = ((((3)))) || 000005 + 7&&08 - 0;
+		return 0;
+	}
+}
+
+class Test {
+	def main() : int {
+		writeln(x.length);
+		writeln(x);
+		writeln(new BabyTest().testMethod(1,2) + 4);
+		x = s.hello(124, 9&&2) + 123 * 4 / 4;
+		new s().hello(x, 21+123, "me");
+		return 0;
+	}
+}
+# this is a % line = comment !
+# *&%#!@#$%SWQ~?/\{}[]()|&*_-
+class Book {
+	var j : int [];
+	var k : boolean;
+
+	def main (f1: int, main: string) : int {
+		if (3||true) then
+			k = false;
+		else
+			k = "YES";
+		return -A && !V || (3+4-3*5);
+	}
+
+	def f(): string {
+		while ( i <> 9){
+			writeln("hi");
+		}
+		main = 1;
+		i [main] = 12;
+		return (B||C) + (m*9) - 3;
+	}
+}
+
+class Test2 {
+	def main2(x: int, y:string, z: Rectangle) : int {
+		if (x==3) then
+			while (y<>4) {
+				if (x+1==0) then {
+					{
+						{
+							{
+							 j = 9;
+							}
+						}
+					}
+				}
+				else {
+					j = 12;
+				}
+			}
+		return 0;
+	}
+}
+class Math{
+    var i: int;
+    def factorial(f: int): int{
+        var j: int;
+        j=1;
+        while(f<>0){
+            j=j*f;
+        }
+        return j;
+    }
+}
+
+class Book {
+  var j : int[];
+  var k : boolean;
+  def x (f1: int) : int {
+    j = 5;
+    while (i.length < 4){
+      j = j && (3*2);
+    }
+    return 3+5+(3||true);
+  }
+}
+
+class Test {
+	def func(arg1 : int, arg2 : int) : int {
+	    var x : int;
+	    var y : MYclass;
+
+	    a == b;
+	    if(a / b) then;
+
+		while(true) {}
+		return 0;
+	}
+}
+
+class Test {
+  def main() : int {
+    a = new int[-10];
+    return 0;
+  }
+}
+
+class MainClass{
+    def main(): int{
+        writeln(new Math().factorial(5));
+        return 0;
+    }
+}
+class Math{
+    var i: int;
+    def factorial(f: int): int{
+        var j: int;
+        j=1;
+        while(f<>0){
+            j=j*f;
+        }
+        return j;
+    }
+}
+
+class Book {
+  var j : int[];
+  var k : boolean;
+
+  def x (f1: int) : int {
+    if (3||true) then
+      k = false;
+    else
+      k = "YES";
+    return -A && !V || (3+4-3*5);
+  }
+
+  def f(): string {
+    while ( i <> 9){
+      writeln("hi");
+    }
+    return (B||C) + (m*9) - 3;
+  }
+}
+
+class Test2 {
+  def main(x: int) : int {
+    var x: int;
+    arr = new int[666];
+    return 0;
+  }
+
+  def m2(): int{
+    var x: int;
+    return 0;
+  }
+
+  def m2(): string{
+    return 0;
+  }
+}
+
+class BabyTest {
+    var test1 : int[];
+    var test2 : boolean;
+    def testMethod(f1 : int, f2 : int) : int {
+        var i : int;
+        i = 0;
+        test1 = new int[1];
+
+        while(i <> 10) {
+            test1[i] = i;
+        }
+        if(test1[1] == 1) then
+            test2 = true;
+        else {
+            test2 = false;
+        }
+        return test2;
+    }
+}
+
+class Test {
+    def main() : int {
+        writeln((new Class1()).testMethod("hi there!"));
+        return 0;
+        # This is a comment
+    }
+
+    def method(arg1: int, arg2: boolean): int {
+        #body
+        var instance : ClassName;
+        instance = new ClassName();
+        return 0;
+    }
+}
+
+class MainClass {
+    def main(): int {
+        writeln(new Math().factorial(5));
+        return 0;
+    }
+}
+
+class Math {
+    var i : int;
+    def factorial(f : int) : int {
+        var j : int;
+        j = 1;
+        while(f <> 0) {
+            j = j * f;
+        }
+        return j;
+    }
+}
+
+class IDENTIFIER {
+    def main() : int {
+        return new SecondMain().main();
+    }
+}
+
+class SecondMain {
+    var arr : int[];
+    var x : int;
+    var y : boolean;
+
+    def main(): int {
+        x = (2 + (3 || 4)) / 7;
+        arr = new int[10];
+        if(arr.length == 10 * x) then
+            y = true;
+        else
+            y = false;
+        return y;
+    }
+}
+
+class SecondMain {
+    var s : Rectangle;
+    def main() : int {
+        var x : int;
+        s = new Rectangle();
+        x = s.constructor(10, 5);
+        return s.area();
+    }
+}
+
+class Rectangle {
+    var x1 : int;
+    var y1 : int;
+    var name : string;
+    def constructor(x : int, y : int) : int {
+        x1 = x;
+        y1 = y;
+        return 0;
+    }
+    def area() : int {
+        return x * y;
+    }
+}
+
 class SecondMain {
     var arr : int[];
     var x : int;
@@ -37,17 +484,6 @@ class a extends b {
         var x : int[];
         var x : boolean;
         var x : string;
-
-        if(
-            !x == 1 ||
-            x[x*2 + 5*x] == true &&
-            a+b+c+d /d/ c +d ||
-            a / b * c + d - e ||
-            a > b ||
-            b < d
-        ) then {
-            writeln(class2.main((2 * (((3))) + x)));
-        }
 
         while(a[34 + 4 + 3 + 3 ]) {
             a = a + 1;
@@ -110,7 +546,7 @@ class Test2 extends Test1 {
     }
 }
 
-class Test extends x {
+class Test extends b {
     def main(): int {
         writeln((new BabyTest()).testMethod(1, 2));
         return 0;
@@ -178,8 +614,9 @@ class Book {
 	}
 }
 
-class IDENTIFIER extends SomeThingElse{
+class IDENTIFIER extends b {
     def main(): int {
+        a = new int[0];
         return new SecondMain().main();
     }
 }
@@ -241,9 +678,59 @@ class Test1{
     }
 }
 
+
+class sss extends SecondMain {
+    var arr : int[];
+    var x : int;
+
+    def xx(a : int) : string {
+        return "";
+    }
+
+    def xx(a : int, b : int) : string {
+        return "";
+    }
+
+    def main(a:int):int {
+        return 0;
+    }
+}
+
+class x extends sss {
+    var x : int;
+
+    def xx() : int {
+        return 0;
+    }
+}
+
+class x extends sss {
+    var arr : int;
+
+    def main() : int {
+        return 0;
+    }
+}
+
+class SecondMain {
+    var arr : int[];
+    var x : int;
+    var y : boolean;
+
+    def main(): int {
+        x = (2 + (3 || 4)) / 7;
+        arr = new int[10];
+        if(arr.length == 10 * x) then
+            y = true;
+        else
+            y = false;
+        return y;
+    }
+}
+
 class Test2 {
   def main() : int {
-    arr = new int[-1];
+    arr = new int[10];
     return 0;
   }
 }
