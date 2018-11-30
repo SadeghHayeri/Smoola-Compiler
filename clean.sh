@@ -1,4 +1,6 @@
 #!/bin/bash
+cd src/main
+
 rm *.class
 rm *.tokens
 rm Smoola*.java
