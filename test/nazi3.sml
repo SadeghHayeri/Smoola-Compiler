@@ -1,4 +1,4 @@
-class IDENTIFIER extends SomeThingElse{
+class IDENTIFIER {
     def main(): int {
         return new SecondMain().main();
     }
@@ -55,7 +55,6 @@ class Test1{
 
     }
     def testMethod(): int{
-        this.k = 10;
         i=10;
         writeln(this.salam());
         return 0;
