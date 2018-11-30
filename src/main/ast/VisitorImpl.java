@@ -103,10 +103,9 @@ public class VisitorImpl implements Visitor {
                     }
                 }
 
-                SymbolTable symbolTable = new SymbolTable(parentSymbolTable);
+                SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
                 classesSymbolTable.put(className, symbolTable);
                 SymbolTable.top = symbolTable;
-                SymbolTable.topIsClass = true;
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(classDeclaration.toString());
@@ -133,8 +132,7 @@ public class VisitorImpl implements Visitor {
                     ArrayList<Type> argsType = methodDeclaration.getArgsType();
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
-                    SymbolTable.push(new SymbolTable(SymbolTable.top));
-                    SymbolTable.topIsClass = false;
+                    SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 } catch (ItemAlreadyExistsException e) {
                     errors.add(new MethodRedefinition(methodDeclaration));
                     String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
@@ -160,7 +158,6 @@ public class VisitorImpl implements Visitor {
 
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
             SymbolTable.pop();
-            SymbolTable.topIsClass = true;
         }
     }
 

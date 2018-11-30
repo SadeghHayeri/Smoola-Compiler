@@ -4,14 +4,13 @@ import java.util.*;
 
 public class SymbolTable {
 
+	boolean strict;
 	SymbolTable pre;
 	HashMap<String, SymbolTableItem> items;
 
 	// Static members region
 
 	public static SymbolTable top;
-	public static boolean topIsClass;
-	
 	private static Stack<SymbolTable> stack = new Stack<SymbolTable>();
 
 	// Use it in pass 1 scope start
@@ -28,11 +27,12 @@ public class SymbolTable {
 
 	// End of static members region
 
-	public SymbolTable() {
-		this(null);
+	public SymbolTable(boolean strict) {
+		this(null, strict);
 	}
 
-	public SymbolTable(SymbolTable pre) {
+	public SymbolTable(SymbolTable pre, boolean strict) {
+		this.strict = strict;
 		this.pre = pre;
 		this.items = new HashMap<String, SymbolTableItem>();
 	}
@@ -41,7 +41,7 @@ public class SymbolTable {
         if(items.containsKey(item.getKey()))
             throw new ItemAlreadyExistsException();
 
-        if(topIsClass) {
+        if(strict) {
             try {
                 get(item.getKey());
                 // item found!
