@@ -7,6 +7,10 @@ public class Error {
         this.line = line;
     }
 
+    public int getLine() {
+        return line;
+    }
+
     public String toString() {
         return "";
     }

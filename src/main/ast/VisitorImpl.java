@@ -15,6 +15,7 @@ import errors.Error;
 import symbolTable.*;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class VisitorImpl implements Visitor {
@@ -49,7 +50,7 @@ public class VisitorImpl implements Visitor {
 //        this.currentPass = Passes.ERROR_CHECK;
 //
         if(!errors.isEmpty()) {
-            //TODO: sort by line number
+            errors.sort(Comparator.comparingInt(Error::getLine));
             for(Error error : errors)
                 Util.error(error.toString());
         } else {
