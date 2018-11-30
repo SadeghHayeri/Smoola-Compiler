@@ -15,27 +15,39 @@ import errors.Error;
 import symbolTable.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class VisitorImpl implements Visitor {
 
     private enum Passes {
+        FIND_CLASSES,
         FILL_SYMBOL_TABLE,
         ERROR_CHECK,
         PRE_ORDER_PRINT
     }
 
     private ArrayList<Error> errors = new ArrayList<>();
+    private HashMap<String, SymbolTable> classesSymbolTable;
+    private HashMap<String, ClassDeclaration> classesDeclaration;
     private Passes currentPass;
 
     @Override
     public void init(Program program) {
 
+        classesDeclaration = new HashMap<>();
+        currentPass = Passes.FIND_CLASSES;
+        program.accept(this);
+
+        if(!program.hasAnyClass())
+            errors.add(new NoClassExist());
+
+        classesSymbolTable = new HashMap<>();
         this.currentPass = Passes.FILL_SYMBOL_TABLE;
         program.accept(this);
 
-        // Check errors
-        this.currentPass = Passes.ERROR_CHECK;
-
+//        // Check errors
+//        this.currentPass = Passes.ERROR_CHECK;
+//
         if(!errors.isEmpty()) {
             //TODO: sort by line number
             for(Error error : errors)
@@ -44,17 +56,14 @@ public class VisitorImpl implements Visitor {
             this.currentPass = Passes.PRE_ORDER_PRINT;
             program.accept(this);
         }
-
-
     }
 
     @Override
     public void visit(Program program) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
-                SymbolTable.push(new SymbolTable());
-                if(!program.hasAnyClass())
-                    errors.add(new NoClassExist());
                 break;
             case ERROR_CHECK:
                 break;
@@ -69,25 +78,40 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(ClassDeclaration classDeclaration) {
+        String className = classDeclaration.getName().getName();
         switch (currentPass) {
-            case FILL_SYMBOL_TABLE:
-                try {
-                    String className = classDeclaration.getName().getName();
-
-                    SymbolTableClassItem classItem = classDeclaration.hasParent() ?
-                            new SymbolTableClassItem(className, classDeclaration.getParentName().getName()) :
-                            new SymbolTableClassItem(className);
-
-                    SymbolTable.top.put(classItem);
-                } catch (ItemAlreadyExistsException e) {
+            case FIND_CLASSES:
+                if(!classesDeclaration.containsKey(className)) {
+                    classesDeclaration.put(className, classDeclaration);
+                } else {
                     errors.add(new ClassRedefinition(classDeclaration));
                     String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(classDeclaration.getName().getLine(), newName);
                     classDeclaration.setName(newId);
                     classDeclaration.accept(this);
-                } finally {
-                    SymbolTable.push(new SymbolTable());
                 }
+                return;
+//                break;
+            case FILL_SYMBOL_TABLE:
+                boolean hasSymbolTable = classesSymbolTable.containsKey(className);
+                if(hasSymbolTable) return;
+
+                SymbolTable parentSymbolTable = null;
+                if(classDeclaration.hasParent()) {
+                    String parentName = classDeclaration.getParentName().getName();
+                    if(classesDeclaration.containsKey(parentName)) {
+                        ClassDeclaration parent = classesDeclaration.get(parentName);
+                        parent.accept(this);
+                        parentSymbolTable = classesSymbolTable.get(parentName);
+                    } else {
+                        errors.add(new UndefinedClass(classDeclaration.getLine(), parentName));
+                    }
+                }
+
+                SymbolTable symbolTable = new SymbolTable(parentSymbolTable);
+                classesSymbolTable.put(className, symbolTable);
+                SymbolTable.top = symbolTable;
+                SymbolTable.topIsClass = true;
                 break;
             case ERROR_CHECK:
                 break;
@@ -103,27 +127,27 @@ public class VisitorImpl implements Visitor {
             varDeclaration.accept(this);
         for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations())
             methodDeclaration.accept(this);
-
-        if(currentPass == Passes.FILL_SYMBOL_TABLE) SymbolTable.pop();
     }
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 try {
                     String methodName = methodDeclaration.getName().getName();
                     ArrayList<Type> argsType = methodDeclaration.getArgsType();
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType);
                     SymbolTable.top.put(method);
+                    SymbolTable.push(new SymbolTable(SymbolTable.top));
+                    SymbolTable.topIsClass = false;
                 } catch (ItemAlreadyExistsException e) {
                     errors.add(new MethodRedefinition(methodDeclaration));
                     String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(methodDeclaration.getName().getLine(), newName);
                     methodDeclaration.setName(newId);
                     methodDeclaration.accept(this);
-                } finally {
-                    SymbolTable.push(new SymbolTable(SymbolTable.top));
                 }
                 break;
             case ERROR_CHECK:
@@ -142,12 +166,17 @@ public class VisitorImpl implements Visitor {
             statement.accept(this);
         methodDeclaration.getReturnValue().accept(this);
 
-        if(currentPass == Passes.FILL_SYMBOL_TABLE)SymbolTable.pop();
+        if(currentPass == Passes.FILL_SYMBOL_TABLE) {
+            SymbolTable.pop();
+            SymbolTable.topIsClass = true;
+        }
     }
 
     @Override
     public void visit(VarDeclaration varDeclaration) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 try {
                     String varName = varDeclaration.getIdentifier().getName();
@@ -171,6 +200,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(ArrayCall arrayCall) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -187,6 +218,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -203,6 +236,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Identifier identifier) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -216,6 +251,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Length length) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -231,6 +268,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -249,6 +288,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewArray newArray) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 Expression exp = newArray.getExpression();
                 boolean isNumberIndex = exp instanceof IntValue;
@@ -271,6 +312,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewClass newClass) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -286,6 +329,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(This instance) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -299,6 +344,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(UnaryExpression unaryExpression) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -314,6 +361,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BooleanValue value) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -327,6 +376,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(IntValue value) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -340,6 +391,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(StringValue value) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -353,6 +406,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Assign assign) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -369,6 +424,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Block block) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -385,6 +442,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Conditional conditional) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -403,6 +462,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(While loop) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -419,6 +480,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Write write) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:
@@ -434,6 +497,8 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(SemiStatement semiStatement) {
         switch (currentPass) {
+            case FIND_CLASSES:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case ERROR_CHECK:

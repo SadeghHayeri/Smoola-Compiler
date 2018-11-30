@@ -10,6 +10,7 @@ public class SymbolTable {
 	// Static members region
 
 	public static SymbolTable top;
+	public static boolean topIsClass;
 	
 	private static Stack<SymbolTable> stack = new Stack<SymbolTable>();
 
@@ -37,9 +38,20 @@ public class SymbolTable {
 	}
 
 	public void put(SymbolTableItem item) throws ItemAlreadyExistsException {
-		if(items.containsKey(item.getKey()))
-			throw new ItemAlreadyExistsException();
-		items.put(item.getKey(), item);
+        if(items.containsKey(item.getKey()))
+            throw new ItemAlreadyExistsException();
+
+        if(topIsClass) {
+            try {
+                get(item.getKey());
+                // item found!
+                throw new ItemAlreadyExistsException();
+            } catch (ItemNotFoundException ignored) {
+                // item not found in current and all pre current
+            }
+        }
+
+        items.put(item.getKey(), item);
 	}
 
 	public SymbolTableItem getInCurrentScope(String key) {

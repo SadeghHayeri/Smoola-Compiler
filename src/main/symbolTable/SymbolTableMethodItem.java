@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 public class SymbolTableMethodItem extends SymbolTableItem {
 
+    public static final String PREFIX = "_DEF_";
+
     ArrayList<Type> argTypes = new ArrayList<>();
 
     public SymbolTableMethodItem(String name, ArrayList<Type> argTypes) {
@@ -15,6 +17,6 @@ public class SymbolTableMethodItem extends SymbolTableItem {
 
     @Override
     public String getKey() {
-        return "_DEF_" + this.name;
+        return PREFIX + this.name;
     }
 }

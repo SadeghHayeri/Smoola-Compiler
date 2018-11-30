@@ -3,6 +3,8 @@ package symbolTable;
 import ast.Type.Type;
 
 public class SymbolTableVariableItem extends SymbolTableItem {
+
+    public static final String PREFIX = "_VAR_";
     private int index;
     protected Type type;
     private static int INDEX = 0;
@@ -23,7 +25,7 @@ public class SymbolTableVariableItem extends SymbolTableItem {
 
     @Override
     public String getKey() {
-        return "_VAR_" + this.name;
+        return PREFIX + this.name;
     }
 
     public int getIndex() {
