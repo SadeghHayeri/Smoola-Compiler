@@ -99,7 +99,8 @@ public class VisitorImpl implements Visitor {
                         parent.accept(this);
                         parentSymbolTable = classesSymbolTable.get(parentName);
                     } else {
-                        errors.add(new UndefinedClass(classDeclaration.getLine(), parentName));
+//                        TODO: uncomment for next phase
+//                        errors.add(new UndefinedClass(classDeclaration.getLine(), parentName));
                     }
                 }
 
@@ -470,6 +471,7 @@ public class VisitorImpl implements Visitor {
                 }
             }
         }
+//        TODO: uncomment for next phase
 //        errors.add(new BadStatement(semiStatement));
     }
 }
