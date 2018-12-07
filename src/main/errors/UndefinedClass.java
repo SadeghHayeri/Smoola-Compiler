@@ -13,6 +13,6 @@ public class UndefinedClass extends Redefinition {
 
     @Override
     public String toString() {
-        return String.format("Line:%d:Class Not Defined %s", line, className);
+        return String.format("Line:%d:class %s is not declared", line, className);
     }
 }
