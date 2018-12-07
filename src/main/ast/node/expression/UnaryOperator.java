@@ -1,5 +1,5 @@
 package ast.node.expression;
 
-public enum UnaryOperator {
+public enum UnaryOperator implements Operator {
     not, minus
 }
