@@ -1,6 +1,6 @@
-package errors.undefinedError;
+package errors.classError;
 
-public class UndefinedClass extends UndefinedError {
+public class UndefinedClass extends ClassError {
 
     private String className;
 

@@ -1,8 +1,9 @@
-package errors.redefinedError;
+package errors.methodError;
 
 import ast.node.declaration.MethodDeclaration;
+import errors.variableError.VariableError;
 
-public class MethodRedefinition extends RedefinationError {
+public class MethodRedefinition extends MethodError {
 
     private String methodName;
     public MethodRedefinition(MethodDeclaration methodDeclaration) {

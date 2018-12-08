@@ -4,7 +4,7 @@ import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
 import errors.methodError.mainMethodError.MainMethodError;
 
-public abstract class BadMainParent extends MainClassError {
+public class BadMainParent extends MainClassError {
 
     public BadMainParent(ClassDeclaration classDeclaration) {
         super(classDeclaration);

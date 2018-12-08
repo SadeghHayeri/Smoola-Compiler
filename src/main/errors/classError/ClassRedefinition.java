@@ -1,8 +1,9 @@
-package errors.redefinedError;
+package errors.classError;
 
 import ast.node.declaration.ClassDeclaration;
+import errors.variableError.VariableError;
 
-public class ClassRedefinition extends RedefinationError {
+public class ClassRedefinition extends ClassError {
 
     private String className;
 

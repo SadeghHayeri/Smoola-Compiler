@@ -2,8 +2,8 @@ package errors.statementError;
 
 import ast.node.statement.SemiStatement;
 
-public class BadStatement extends StatementError {
-    public BadStatement(SemiStatement semiStatement) {
+public class NotAStatement extends StatementError {
+    public NotAStatement(SemiStatement semiStatement) {
         super(semiStatement.getLine());
     }
 

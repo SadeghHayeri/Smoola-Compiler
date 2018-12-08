@@ -1,9 +1,9 @@
-package errors.undefinedError;
+package errors.methodError;
 
 import ast.node.expression.Expression;
 import ast.node.expression.MethodCall;
 
-public class UndefinedMethod extends UndefinedError {
+public class UndefinedMethod extends MethodError {
 
     private String className;
     private String methodName;
