@@ -1,11 +1,10 @@
-package errors;
+package errors.expressionError;
 
 import ast.node.expression.BinaryOperator;
-import ast.node.expression.NewArray;
 import ast.node.expression.Operator;
 import ast.node.expression.UnaryOperator;
 
-public class UnsupportedOperand extends Error {
+public class UnsupportedOperand extends ExpressionError {
 
     private Operator operator;
     public UnsupportedOperand(int line, BinaryOperator operator) {

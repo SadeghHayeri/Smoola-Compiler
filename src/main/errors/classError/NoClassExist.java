@@ -1,6 +1,8 @@
-package errors;
+package errors.classError;
 
-public class NoClassExist extends Error {
+import errors.Error;
+
+public class NoClassExist extends ClassError {
     public NoClassExist() {
         super(0);
     }

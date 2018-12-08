@@ -1,8 +1,8 @@
-package errors;
+package errors.expressionError;
 
 import ast.node.expression.NewArray;
 
-public class BadArraySize extends Error {
+public class BadArraySize extends ExpressionError {
     public BadArraySize(NewArray newArray) {
         super(newArray.getLine());
     }

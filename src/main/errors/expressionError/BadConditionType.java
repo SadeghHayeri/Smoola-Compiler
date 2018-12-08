@@ -1,9 +1,8 @@
-package errors;
+package errors.expressionError;
 
 import ast.node.expression.Expression;
-import ast.node.statement.SemiStatement;
 
-public class BadConditionType extends Error {
+public class BadConditionType extends ExpressionError {
     public BadConditionType(Expression expression) {
         super(expression.getLine());
     }

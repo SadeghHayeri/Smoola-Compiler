@@ -1,6 +1,6 @@
 package errors;
 
-public class Error {
+public class Error extends Throwable {
     protected int line;
 
     public Error(int line) {

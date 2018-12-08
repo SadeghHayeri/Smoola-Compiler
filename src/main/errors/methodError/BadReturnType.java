@@ -1,10 +1,10 @@
-package errors;
+package errors.methodError;
 
 import ast.Type.Type;
 import ast.node.expression.Expression;
-import ast.node.expression.NewArray;
+import errors.statementError.StatementError;
 
-public class BadReturnType extends Error {
+public class BadReturnType extends MethodError {
 
     private String returnTypeName;
     public BadReturnType(Type returnType, Expression returnValue) {

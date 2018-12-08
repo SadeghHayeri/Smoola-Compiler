@@ -1,9 +1,8 @@
-package errors;
+package errors.statementError;
 
-import ast.node.expression.NewArray;
 import ast.node.statement.SemiStatement;
 
-public class BadStatement extends Error {
+public class BadStatement extends StatementError {
     public BadStatement(SemiStatement semiStatement) {
         super(semiStatement.getLine());
     }

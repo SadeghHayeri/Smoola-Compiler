@@ -10,8 +10,15 @@ import ast.node.expression.Value.BooleanValue;
 import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
-import errors.*;
 import errors.Error;
+import errors.classError.NoClassExist;
+import errors.expressionError.BadArraySize;
+import errors.redefinedError.ClassRedefinition;
+import errors.redefinedError.MethodRedefinition;
+import errors.redefinedError.VariableRedefinition;
+import errors.statementError.BadStatement;
+import errors.undefinedError.UndefinedClass;
+import errors.undefinedError.UndefinedVariable;
 import symbolTable.*;
 
 import java.util.ArrayList;

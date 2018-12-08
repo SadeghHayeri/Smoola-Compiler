@@ -1,8 +1,6 @@
-package errors;
+package errors.undefinedError;
 
-import ast.node.declaration.ClassDeclaration;
-
-public class UndefinedClass extends Redefinition {
+public class UndefinedClass extends UndefinedError {
 
     private String className;
 

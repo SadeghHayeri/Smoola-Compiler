@@ -1,8 +1,8 @@
-package errors;
+package errors.redefinedError;
 
 import ast.node.declaration.VarDeclaration;
 
-public class VariableRedefinition extends Redefinition {
+public class VariableRedefinition extends RedefinationError {
 
     private String variableName;
     public VariableRedefinition(VarDeclaration varDeclaration) {

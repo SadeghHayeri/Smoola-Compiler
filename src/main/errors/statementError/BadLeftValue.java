@@ -1,9 +1,8 @@
-package errors;
+package errors.statementError;
 
 import ast.node.expression.Expression;
-import ast.node.expression.NewArray;
 
-public class BadLeftValue extends Error {
+public class BadLeftValue extends StatementError {
     public BadLeftValue(Expression expression) {
         super(expression.getLine());
     }

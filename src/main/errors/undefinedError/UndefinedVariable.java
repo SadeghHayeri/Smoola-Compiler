@@ -1,8 +1,8 @@
-package errors;
+package errors.undefinedError;
 
 import ast.node.expression.Identifier;
 
-public class UndefinedVariable extends Error {
+public class UndefinedVariable extends UndefinedError {
     private String variableName;
     public UndefinedVariable(Identifier identifier) {
         super(identifier.getLine());

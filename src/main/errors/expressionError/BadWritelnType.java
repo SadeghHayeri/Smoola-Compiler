@@ -1,9 +1,8 @@
-package errors;
+package errors.expressionError;
 
-import ast.node.expression.NewArray;
 import ast.node.statement.Write;
 
-public class BadWritelnType extends Error {
+public class BadWritelnType extends ExpressionError {
     public BadWritelnType(Write write) {
         super(write.getLine());
     }
