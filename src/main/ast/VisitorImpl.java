@@ -11,6 +11,7 @@ import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
+import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
 import errors.expressionError.BadArraySize;
 import errors.redefinedError.ClassRedefinition;
@@ -38,19 +39,57 @@ public class VisitorImpl implements Visitor {
     private HashMap<String, ClassDeclaration> classesDeclaration;
     private Passes currentPass;
 
+    private ClassDeclaration getParent(ClassDeclaration classDeclaration) {
+        if(!classDeclaration.hasParent())
+            return null;
+
+        String parentName = classDeclaration.getParentName().getName();
+        if(!this.classesDeclaration.containsKey(parentName))
+            return null;
+
+        return this.classesDeclaration.get(parentName);
+    }
+
+    private boolean hasCircularInheritance() {
+        for(ClassDeclaration classDeclaration : this.classesDeclaration.values()) {
+            ClassDeclaration ptr1 = classDeclaration;
+            ClassDeclaration ptr2 = classDeclaration;
+
+            while(ptr2 != null) {
+                // Move one by one
+                ptr1 = getParent(ptr1);
+
+                // Move two by two
+                ptr2 = getParent(ptr2);
+                if(ptr2 != null)
+                    ptr2 = getParent(ptr2);
+                else
+                    break;
+
+                if(ptr1 == ptr2)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void init(Program program) {
 
-        currentPass = Passes.FIND_CLASSES;
-        classesDeclaration = new HashMap<>();
-        program.accept(this);
+        try {
+            currentPass = Passes.FIND_CLASSES;
+            classesDeclaration = new HashMap<>();
+            program.accept(this);
 
-        if(!program.hasAnyClass())
-            errors.add(new NoClassExist());
+            if(!program.hasAnyClass()) throw new NoClassExist();
+            if(hasCircularInheritance()) throw new CircularInheritance();
 
-        this.currentPass = Passes.FILL_SYMBOL_TABLE;
-        classesSymbolTable = new HashMap<>();
-        program.accept(this);
+            this.currentPass = Passes.FILL_SYMBOL_TABLE;
+            classesSymbolTable = new HashMap<>();
+            program.accept(this);
+        } catch (NoClassExist | CircularInheritance e) {
+            errors.add(e);
+        }
 
         if(!errors.isEmpty()) {
             errors.sort(Comparator.comparingInt(Error::getLine));
