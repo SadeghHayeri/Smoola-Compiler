@@ -12,11 +12,11 @@ import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
 import errors.expressionError.BadArraySize;
-import errors.redefinedError.ClassRedefinition;
-import errors.redefinedError.MethodRedefinition;
-import errors.redefinedError.VariableRedefinition;
-import errors.statementError.BadStatement;
-import errors.undefinedError.UndefinedClass;
+import errors.classError.ClassRedefinition;
+import errors.methodError.MethodRedefinition;
+import errors.variableError.VariableRedefinition;
+import errors.statementError.NotAStatement;
+import errors.classError.UndefinedClass;
 import symbolTable.*;
 
 import java.util.ArrayList;
@@ -33,7 +33,6 @@ public class VisitorImpl implements Visitor {
     private HashMap<String, SymbolTable> classesSymbolTable;
     private HashMap<String, ClassDeclaration> classesDeclaration;
     private Passes currentPass;
-    ErrorChecker errorChecker = new ErrorChecker();
 
     @Override
     public void init(Program program) {
@@ -41,22 +40,18 @@ public class VisitorImpl implements Visitor {
         classesDeclaration = new HashMap<>();
         program.accept(this);
 
-        errorChecker.setProgram(program);
-        errorChecker.setClassesDeclaration(classesDeclaration);
-        errorChecker.setClassesSymbolTable(classesSymbolTable);
+        ErrorChecker.checkHasAnyClass(program);
+        ErrorChecker.checkMainClassErrors(program);
+        ErrorChecker.checkCircularInheritance(classesDeclaration);
 
-        errorChecker.checkHasAnyClass();
-        errorChecker.checkCircularInheritance();
-        errorChecker.checkMainNotFound();
-
-        if(!errorChecker.hasCriticalError()) {
+        if(!ErrorChecker.hasCriticalError()) {
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
             classesSymbolTable = new HashMap<>();
             program.accept(this);
         }
 
-        if(errorChecker.hasError()) {
-            for(Error error : errorChecker.getErrors())
+        if(ErrorChecker.hasError()) {
+            for(Error error : ErrorChecker.getErrors())
                 Util.error(error.toString());
         } else {
             this.currentPass = Passes.PRE_ORDER_PRINT;
@@ -87,7 +82,7 @@ public class VisitorImpl implements Visitor {
                 if(!classesDeclaration.containsKey(className)) {
                     classesDeclaration.put(className, classDeclaration);
                 } else {
-                    errorChecker.addError(new ClassRedefinition(classDeclaration));
+                    ErrorChecker.addError(new ClassRedefinition(classDeclaration));
                     String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(classDeclaration.getName().getLine(), newName);
                     classDeclaration.setName(newId);
@@ -107,7 +102,7 @@ public class VisitorImpl implements Visitor {
                         parent.accept(this);
                         parentSymbolTable = classesSymbolTable.get(parentName);
                     } else {
-                        errorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
+                        ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
                     }
                 }
 
@@ -142,7 +137,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.top.put(method);
                     SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 } catch (ItemAlreadyExistsException e) {
-                    errorChecker.addError(new MethodRedefinition(methodDeclaration));
+                    ErrorChecker.addError(new MethodRedefinition(methodDeclaration));
                     String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(methodDeclaration.getName().getLine(), newName);
                     methodDeclaration.setName(newId);
@@ -181,7 +176,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    errorChecker.addError(new VariableRedefinition(varDeclaration));
+                    ErrorChecker.addError(new VariableRedefinition(varDeclaration));
                 }
                 break;
             case PRE_ORDER_PRINT:
@@ -280,7 +275,7 @@ public class VisitorImpl implements Visitor {
                 if(exp instanceof IntValue) {
                     int value = ((IntValue)exp).getConstant();
                     if(value == 0)
-                        errorChecker.addError(new BadArraySize(newArray));
+                        ErrorChecker.addError(new BadArraySize(newArray));
                 }
 
                 //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
@@ -292,7 +287,7 @@ public class VisitorImpl implements Visitor {
                         if(innerExp instanceof IntValue) {
                             int value = ((IntValue)innerExp).getConstant();
                             if(value >= 0)
-                                errorChecker.addError(new BadArraySize(newArray));
+                                ErrorChecker.addError(new BadArraySize(newArray));
                         }
                     }
                 }
@@ -492,6 +487,6 @@ public class VisitorImpl implements Visitor {
                 }
             }
         }
-        errorChecker.addError(new BadStatement(semiStatement));
+        ErrorChecker.addError(new NotAStatement(semiStatement));
     }
 }
