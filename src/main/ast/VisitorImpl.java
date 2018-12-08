@@ -11,20 +11,15 @@ import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
-import errors.classError.CircularInheritance;
-import errors.classError.NoClassExist;
 import errors.expressionError.BadArraySize;
 import errors.redefinedError.ClassRedefinition;
 import errors.redefinedError.MethodRedefinition;
 import errors.redefinedError.VariableRedefinition;
 import errors.statementError.BadStatement;
 import errors.undefinedError.UndefinedClass;
-import errors.undefinedError.UndefinedVariable;
-import org.jetbrains.annotations.Nullable;
 import symbolTable.*;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 
 public class VisitorImpl implements Visitor {
@@ -35,67 +30,33 @@ public class VisitorImpl implements Visitor {
         PRE_ORDER_PRINT
     }
 
-    private ArrayList<Error> errors = new ArrayList<>();
     private HashMap<String, SymbolTable> classesSymbolTable;
     private HashMap<String, ClassDeclaration> classesDeclaration;
     private Passes currentPass;
-
-    @Nullable
-    private ClassDeclaration getParent(ClassDeclaration classDeclaration) {
-        if(!classDeclaration.hasParent())
-            return null;
-
-        String parentName = classDeclaration.getParentName().getName();
-        if(!this.classesDeclaration.containsKey(parentName))
-            return null;
-
-        return this.classesDeclaration.get(parentName);
-    }
-
-    private boolean hasCircularInheritance() {
-        for(ClassDeclaration classDeclaration : this.classesDeclaration.values()) {
-            ClassDeclaration ptr1 = classDeclaration;
-            ClassDeclaration ptr2 = classDeclaration;
-
-            while(ptr2 != null) {
-                // Move one by one
-                ptr1 = getParent(ptr1);
-
-                // Move two by two
-                ptr2 = getParent(ptr2);
-                if(ptr2 != null)
-                    ptr2 = getParent(ptr2);
-                else
-                    break;
-
-                if(ptr1 == ptr2)
-                    return true;
-            }
-        }
-        return false;
-    }
+    ErrorChecker errorChecker = new ErrorChecker();
 
     @Override
     public void init(Program program) {
+        currentPass = Passes.FIND_CLASSES;
+        classesDeclaration = new HashMap<>();
+        program.accept(this);
 
-        try {
-            currentPass = Passes.FIND_CLASSES;
-            classesDeclaration = new HashMap<>();
-            program.accept(this);
+        errorChecker.setProgram(program);
+        errorChecker.setClassesDeclaration(classesDeclaration);
+        errorChecker.setClassesSymbolTable(classesSymbolTable);
 
-            if(!program.hasAnyClass()) throw new NoClassExist();
-            if(hasCircularInheritance()) throw new CircularInheritance();
+        errorChecker.checkHasAnyClass();
+        errorChecker.checkCircularInheritance();
+        errorChecker.checkMainNotFound();
 
+        if(!errorChecker.hasCriticalError()) {
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
             classesSymbolTable = new HashMap<>();
             program.accept(this);
-        } catch (NoClassExist | CircularInheritance e) {
-            errors.add(e);
         }
 
-        if(!errors.isEmpty()) {
-            errors.sort(Comparator.comparingInt(Error::getLine));
-            for(Error error : errors)
+        if(errorChecker.hasError()) {
+            for(Error error : errorChecker.getErrors())
                 Util.error(error.toString());
         } else {
             this.currentPass = Passes.PRE_ORDER_PRINT;
@@ -103,7 +64,6 @@ public class VisitorImpl implements Visitor {
         }
     }
 
-    @Override
     public void visit(Program program) {
         switch (currentPass) {
             case FIND_CLASSES:
@@ -127,7 +87,7 @@ public class VisitorImpl implements Visitor {
                 if(!classesDeclaration.containsKey(className)) {
                     classesDeclaration.put(className, classDeclaration);
                 } else {
-                    errors.add(new ClassRedefinition(classDeclaration));
+                    errorChecker.addError(new ClassRedefinition(classDeclaration));
                     String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(classDeclaration.getName().getLine(), newName);
                     classDeclaration.setName(newId);
@@ -147,7 +107,7 @@ public class VisitorImpl implements Visitor {
                         parent.accept(this);
                         parentSymbolTable = classesSymbolTable.get(parentName);
                     } else {
-                        errors.add(new UndefinedClass(classDeclaration.getLine(), parentName));
+                        errorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
                     }
                 }
 
@@ -182,7 +142,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTable.top.put(method);
                     SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 } catch (ItemAlreadyExistsException e) {
-                    errors.add(new MethodRedefinition(methodDeclaration));
+                    errorChecker.addError(new MethodRedefinition(methodDeclaration));
                     String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
                     Identifier newId = new Identifier(methodDeclaration.getName().getLine(), newName);
                     methodDeclaration.setName(newId);
@@ -221,7 +181,7 @@ public class VisitorImpl implements Visitor {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
-                    errors.add(new VariableRedefinition(varDeclaration));
+                    errorChecker.addError(new VariableRedefinition(varDeclaration));
                 }
                 break;
             case PRE_ORDER_PRINT:
@@ -320,7 +280,7 @@ public class VisitorImpl implements Visitor {
                 if(exp instanceof IntValue) {
                     int value = ((IntValue)exp).getConstant();
                     if(value == 0)
-                        errors.add(new BadArraySize(newArray));
+                        errorChecker.addError(new BadArraySize(newArray));
                 }
 
                 //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
@@ -332,7 +292,7 @@ public class VisitorImpl implements Visitor {
                         if(innerExp instanceof IntValue) {
                             int value = ((IntValue)innerExp).getConstant();
                             if(value >= 0)
-                                errors.add(new BadArraySize(newArray));
+                                errorChecker.addError(new BadArraySize(newArray));
                         }
                     }
                 }
@@ -532,6 +492,6 @@ public class VisitorImpl implements Visitor {
                 }
             }
         }
-        errors.add(new BadStatement(semiStatement));
+        errorChecker.addError(new BadStatement(semiStatement));
     }
 }
