@@ -1,11 +1,12 @@
 package errors.expressionError;
 
 import ast.node.expression.ArrayCall;
+import ast.node.expression.Expression;
 import ast.node.expression.NewArray;
 
 public class ArrayExpected extends ExpressionError {
-    public ArrayExpected(ArrayCall arrayCall) {
-        super(arrayCall.getLine());
+    public ArrayExpected(Expression array) {
+        super(array.getLine());
     }
 
     @Override

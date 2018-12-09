@@ -5,18 +5,8 @@ import ast.Visitor;
 import ast.node.Node;
 
 public abstract class Expression extends Node {
-    private Type type;
-
     public Expression(int line) {
         super(line);
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     @Override

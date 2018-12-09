@@ -1,20 +1,18 @@
 package errors.expressionError;
 
-import ast.node.expression.BinaryOperator;
-import ast.node.expression.Operator;
-import ast.node.expression.UnaryOperator;
+import ast.node.expression.*;
 
 public class UnsupportedOperand extends ExpressionError {
 
     private Operator operator;
-    public UnsupportedOperand(int line, BinaryOperator operator) {
-        super(line);
-        this.operator = operator;
+    public UnsupportedOperand(BinaryExpression binaryExpression) {
+        super(binaryExpression.getLine());
+        this.operator = binaryExpression.getBinaryOperator();
     }
 
-    public UnsupportedOperand(int line, UnaryOperator operator) {
-        super(line);
-        this.operator = operator;
+    public UnsupportedOperand(UnaryExpression unaryExpression) {
+        super(unaryExpression.getLine());
+        this.operator = unaryExpression.getUnaryOperator();
     }
 
     @Override

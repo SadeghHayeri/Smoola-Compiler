@@ -1,17 +1,35 @@
 package ast;
 
+import ast.Type.ArrayType.ArrayType;
+import ast.Type.NoType;
+import ast.Type.PrimitiveType.BooleanType;
 import ast.Type.PrimitiveType.IntType;
+import ast.Type.PrimitiveType.StringType;
+import ast.Type.Type;
+import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
+import ast.node.expression.*;
+import ast.node.expression.Value.BooleanValue;
+import ast.node.expression.Value.IntValue;
+import ast.node.expression.Value.StringValue;
 import errors.Error;
 import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
 import errors.classError.mainClassError.BadMainParent;
 import errors.classError.mainClassError.MainNotFound;
 import errors.classError.mainClassError.TooManyMethods;
+import errors.expressionError.ArrayExpected;
+import errors.expressionError.UnsupportedOperand;
 import errors.methodError.mainMethodError.BadMainArgs;
 import errors.methodError.mainMethodError.BadMainReturnType;
+import errors.statementError.BadLeftValue;
+import errors.variableError.UndefinedVariable;
+import symbolTable.ItemNotFoundException;
+import symbolTable.SymbolTable;
+import symbolTable.SymbolTableItem;
+import symbolTable.SymbolTableVariableItem;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -114,5 +132,189 @@ public class ErrorChecker {
             return null;
 
         return classesDeclaration.get(parentName);
+    }
+
+    static private Type getIdentifierType(Identifier identifier) {
+        try {
+            SymbolTableVariableItem item = (SymbolTableVariableItem)SymbolTable.top.get(SymbolTableVariableItem.PREFIX + identifier.getName());
+            return item.getType();
+        } catch (ItemNotFoundException e) {
+            errors.add(new UndefinedVariable(identifier));
+            return new NoType();
+        }
+    }
+
+    static public boolean isSubType(HashMap<String, ClassDeclaration> classesDeclaration, String leftName, String rightName) {
+        while (true) {
+            if(leftName.equals(rightName))
+                return true;
+
+            ClassDeclaration right = classesDeclaration.get(rightName);
+            if(!right.hasParent())
+                return false;
+
+            rightName = right.getParentName().getName();
+        }
+    }
+
+    static public Type findExpType(HashMap<String, ClassDeclaration> classesDeclaration, Expression exp) {
+        if (exp instanceof BooleanValue) {
+            return new BooleanType();
+        } else if (exp instanceof IntValue) {
+            return new IntType();
+        } else if (exp instanceof StringValue) {
+            return new StringType();
+        } else if (exp instanceof ArrayCall) {
+            ArrayCall arrayCall = (ArrayCall)exp;
+            Type instanceType = findExpType(classesDeclaration, arrayCall.getInstance());
+
+            if(!(instanceType instanceof ArrayType))
+                errors.add(new ArrayExpected(arrayCall.getInstance()));
+
+            return new IntType();
+        } else if (exp instanceof BinaryExpression) {
+            BinaryExpression binaryExpression = (BinaryExpression)exp;
+            Type leftType = findExpType(classesDeclaration, binaryExpression.getLeft());
+            Type rightType = findExpType(classesDeclaration, binaryExpression.getRight());
+
+            BinaryOperator operator = binaryExpression.getBinaryOperator();
+            boolean arithmeticOperator =
+                    operator == BinaryOperator.mult
+                    || operator == BinaryOperator.div
+                    || operator == BinaryOperator.add
+                    || operator == BinaryOperator.sub;
+
+            boolean logicalOperator =
+                    operator == BinaryOperator.and
+                    || operator == BinaryOperator.or;
+
+            boolean relationalOperator =
+                    operator == BinaryOperator.gt
+                    || operator == BinaryOperator.lt
+                    || operator == BinaryOperator.eq
+                    || operator == BinaryOperator.neq;
+
+            boolean eqOrNeq =
+                    operator == BinaryOperator.eq
+                    || operator == BinaryOperator.neq;
+
+            boolean isAssign =
+                    operator == BinaryOperator.assign;
+
+            if(arithmeticOperator) {
+                bothSideInt(binaryExpression, leftType, rightType);
+                return new IntType();
+            }
+            else if(logicalOperator) {
+                if(!(leftType instanceof BooleanType || leftType instanceof NoType))
+                    errors.add(new UnsupportedOperand(binaryExpression));
+                if(!(rightType instanceof BooleanType || rightType instanceof NoType))
+                    errors.add(new UnsupportedOperand(binaryExpression));
+                return new BooleanType();
+            }
+            else if(relationalOperator) {
+                if(eqOrNeq) {
+                    if (leftType instanceof NoType)
+                        return rightType;
+                    if (rightType instanceof NoType)
+                        return leftType;
+                    if (leftType instanceof BooleanType && rightType instanceof BooleanType)
+                        return new BooleanType();
+                    else if (leftType instanceof IntType && rightType instanceof IntType)
+                        return new IntType();
+                    else if (leftType instanceof StringType && rightType instanceof StringType)
+                        return new StringType();
+                    else if (leftType instanceof ArrayType && rightType instanceof ArrayType) {
+                        ArrayType leftArray = (ArrayType)leftType;
+                        ArrayType rightArray = (ArrayType)rightType;
+                        if(leftArray.getSize() != rightArray.getSize()) {
+                            //TODO: set size first!
+                            errors.add(new UnsupportedOperand(binaryExpression));
+                            return new NoType();
+                        }
+                        return leftArray;
+                    }
+                    else if(leftType instanceof UserDefinedType && rightType instanceof UserDefinedType) {
+                        String leftTypeName = ((UserDefinedType)leftType).getName().getName();
+                        String rightTypeName = ((UserDefinedType)rightType).getName().getName();
+
+                        if(leftTypeName.equals(rightTypeName)) {
+                            return ((UserDefinedType)leftType);
+                        } else {
+                            errors.add(new UnsupportedOperand(binaryExpression));
+                            return new NoType();
+                        }
+                    }
+                } else {
+                    bothSideInt(binaryExpression, leftType, rightType);
+                    return new BooleanType();
+                }
+            } else if(isAssign) {
+                if(!(binaryExpression.getLeft() instanceof Identifier || binaryExpression.getLeft() instanceof ArrayCall))
+                    errors.add(new BadLeftValue(binaryExpression));
+
+                if(leftType instanceof IntType && rightType instanceof IntType)
+                    return new IntType();
+                else if(leftType instanceof BooleanType && rightType instanceof BooleanType)
+                    return new BooleanType();
+                else if(leftType instanceof ArrayType && rightType instanceof ArrayType)
+                    return new ArrayType();
+                else if(leftType instanceof StringType && rightType instanceof StringType)
+                    return new StringType();
+                else if(leftType instanceof UserDefinedType && rightType instanceof UserDefinedType) {
+                    String leftTypeName = ((UserDefinedType)leftType).getName().getName();
+                    String rightTypeName = ((UserDefinedType)rightType).getName().getName();
+                    if (isSubType(classesDeclaration, leftTypeName, rightTypeName))
+                        return leftType;
+                } else if(leftType instanceof NoType) {
+                    return rightType;
+                } else if(rightType instanceof NoType) {
+                    return leftType;
+                } else {
+                    errors.add(new UnsupportedOperand(binaryExpression));
+                    return new NoType();
+                }
+            }
+            return new NoType();
+        } else if (exp instanceof UnaryExpression) {
+            UnaryExpression unaryExpression = (UnaryExpression) exp;
+            Type expType = findExpType(classesDeclaration, unaryExpression.getValue());
+
+            UnaryOperator operator = unaryExpression.getUnaryOperator();
+
+            if(operator == UnaryOperator.minus) {
+                if(!(expType instanceof IntType))
+                    errors.add(new UnsupportedOperand(unaryExpression));
+                return new IntType();
+            } else if(operator == UnaryOperator.not) {
+                if(!(expType instanceof BooleanType))
+                    errors.add(new UnsupportedOperand(unaryExpression));
+                return new BooleanType();
+            }
+        } else if (exp instanceof Identifier) {
+            Identifier identifier = (Identifier)exp;
+            return getIdentifierType(identifier);
+        } else if (exp instanceof Length) {
+            Expression arrayExp = ((Length)exp).getExpression();
+            Type instanceType = findExpType(classesDeclaration, arrayExp);
+
+            if(!(instanceType instanceof ArrayType))
+                errors.add(new ArrayExpected(arrayExp));
+
+            return new IntType();
+        } else if (exp instanceof MethodCall) {
+        } else if (exp instanceof NewArray) {
+        } else if (exp instanceof NewClass) {
+        } else if (exp instanceof This) {
+        }
+
+        return new NoType();
+    }
+
+    private static void bothSideInt(BinaryExpression binaryExpression, Type leftType, Type rightType) {
+        if(!(leftType instanceof IntType || leftType instanceof NoType))
+            errors.add(new UnsupportedOperand(binaryExpression));
+        if(!(rightType instanceof IntType || rightType instanceof NoType))
+            errors.add(new UnsupportedOperand(binaryExpression));
     }
 }

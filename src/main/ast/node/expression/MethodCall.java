@@ -8,11 +8,20 @@ import java.util.ArrayList;
 public class MethodCall extends Expression {
     private Expression instance;
     private Identifier methodName;
+    private Type returnType;
 
     public MethodCall(int line, Expression instance, Identifier methodName) {
         super(line);
         this.instance = instance;
         this.methodName = methodName;
+    }
+
+    public Type getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Type returnType) {
+        this.returnType = returnType;
     }
 
     private ArrayList<Expression> args = new ArrayList<>();
