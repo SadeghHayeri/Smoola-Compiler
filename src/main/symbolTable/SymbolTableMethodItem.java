@@ -7,12 +7,21 @@ import java.util.ArrayList;
 public class SymbolTableMethodItem extends SymbolTableItem {
 
     public static final String PREFIX = "_DEF_";
+    private ArrayList<Type> argTypes = new ArrayList<>();
+    private Type returnType;
 
-    ArrayList<Type> argTypes = new ArrayList<>();
-
-    public SymbolTableMethodItem(String name, ArrayList<Type> argTypes) {
+    public SymbolTableMethodItem(String name, ArrayList<Type> argTypes, Type returnType) {
         this.name = name;
         this.argTypes = argTypes;
+        this.returnType = returnType;
+    }
+
+    public ArrayList<Type> getArgTypes() {
+        return argTypes;
+    }
+
+    public Type getReturnType() {
+        return returnType;
     }
 
     @Override

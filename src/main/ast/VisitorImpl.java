@@ -1,8 +1,6 @@
 package ast;
 
-import ast.Type.NoType;
 import ast.Type.Type;
-import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
@@ -15,10 +13,7 @@ import ast.node.statement.*;
 import errors.Error;
 import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
-import errors.methodError.ArgsMismatch;
-import errors.methodError.MethodExpected;
 import errors.methodError.MethodRedefinition;
-import errors.methodError.UndefinedMethod;
 import errors.variableError.VariableRedefinition;
 import errors.statementError.NotAStatement;
 import errors.classError.UndefinedClass;
@@ -281,48 +276,7 @@ public class VisitorImpl implements Visitor {
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
-                Expression instance = methodCall.getInstance();
-                SymbolTable classSymbolTable = null;
 
-                if(instance instanceof Identifier) {
-                    String className = ((Identifier)instance).getName();
-                    classSymbolTable = this.classesSymbolTable.get(className);
-                }
-
-                else if(instance instanceof NewClass) {
-                    String className = ((NewClass) instance).getClassName().getName();
-                    classSymbolTable = this.classesSymbolTable.get(className);
-                }
-
-                else if(instance instanceof MethodCall) {
-                    Type returnType = ((MethodCall)instance).getReturnType();
-                    if(returnType instanceof UserDefinedType) {
-                        String className = ((UserDefinedType)returnType).getName().getName();
-                        classSymbolTable = this.classesSymbolTable.get(className);
-                    }
-                }
-
-                else if (instance instanceof This) {
-                    classSymbolTable = SymbolTable.top.pre;
-                }
-
-                if(classSymbolTable == null) {
-                    ErrorChecker.addError(new MethodExpected(methodCall));
-                    methodCall.setReturnType(new NoType());
-                } else {
-                    try {
-                        String methodName = methodCall.getMethodName().getName();
-                        SymbolTableMethodItem symbolTableMethodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
-                        methodCall.setReturnType(symbolTableMethodItem.getReturnType());
-
-                        for(Type type : symbolTableMethodItem.getArgTypes()) {
-                            // TODO: find exp types and check!
-                            // ErrorChecker.addError(new ArgsMismatch(methodCall));
-                        }
-                    } catch (ItemNotFoundException e) {
-                        ErrorChecker.addError(new UndefinedMethod(methodCall));
-                    }
-                }
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(methodCall.toString());

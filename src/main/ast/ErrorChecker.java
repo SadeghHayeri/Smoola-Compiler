@@ -17,19 +17,20 @@ import ast.node.expression.Value.StringValue;
 import errors.Error;
 import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
+import errors.classError.UndefinedClass;
 import errors.classError.mainClassError.BadMainParent;
 import errors.classError.mainClassError.MainNotFound;
 import errors.classError.mainClassError.TooManyMethods;
 import errors.expressionError.ArrayExpected;
 import errors.expressionError.UnsupportedOperand;
+import errors.methodError.ArgsMismatch;
+import errors.methodError.UndefinedMethod;
+import errors.methodError.classExpected;
 import errors.methodError.mainMethodError.BadMainArgs;
 import errors.methodError.mainMethodError.BadMainReturnType;
 import errors.statementError.BadLeftValue;
 import errors.variableError.UndefinedVariable;
-import symbolTable.ItemNotFoundException;
-import symbolTable.SymbolTable;
-import symbolTable.SymbolTableItem;
-import symbolTable.SymbolTableVariableItem;
+import symbolTable.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -157,7 +158,7 @@ public class ErrorChecker {
         }
     }
 
-    static public Type findExpType(HashMap<String, ClassDeclaration> classesDeclaration, Expression exp) {
+    static public Type findExpType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, Expression exp) {
         if (exp instanceof BooleanValue) {
             return new BooleanType();
         } else if (exp instanceof IntValue) {
@@ -166,7 +167,7 @@ public class ErrorChecker {
             return new StringType();
         } else if (exp instanceof ArrayCall) {
             ArrayCall arrayCall = (ArrayCall)exp;
-            Type instanceType = findExpType(classesDeclaration, arrayCall.getInstance());
+            Type instanceType = findExpType(classesDeclaration, classesSymbolTable, arrayCall.getInstance());
 
             if(!(instanceType instanceof ArrayType))
                 errors.add(new ArrayExpected(arrayCall.getInstance()));
@@ -174,8 +175,8 @@ public class ErrorChecker {
             return new IntType();
         } else if (exp instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression)exp;
-            Type leftType = findExpType(classesDeclaration, binaryExpression.getLeft());
-            Type rightType = findExpType(classesDeclaration, binaryExpression.getRight());
+            Type leftType = findExpType(classesDeclaration, classesSymbolTable, binaryExpression.getLeft());
+            Type rightType = findExpType(classesDeclaration, classesSymbolTable, binaryExpression.getRight());
 
             BinaryOperator operator = binaryExpression.getBinaryOperator();
             boolean arithmeticOperator =
@@ -278,7 +279,7 @@ public class ErrorChecker {
             return new NoType();
         } else if (exp instanceof UnaryExpression) {
             UnaryExpression unaryExpression = (UnaryExpression) exp;
-            Type expType = findExpType(classesDeclaration, unaryExpression.getValue());
+            Type expType = findExpType(classesDeclaration, classesSymbolTable, unaryExpression.getValue());
 
             UnaryOperator operator = unaryExpression.getUnaryOperator();
 
@@ -296,13 +297,75 @@ public class ErrorChecker {
             return getIdentifierType(identifier);
         } else if (exp instanceof Length) {
             Expression arrayExp = ((Length)exp).getExpression();
-            Type instanceType = findExpType(classesDeclaration, arrayExp);
+            Type instanceType = findExpType(classesDeclaration, classesSymbolTable, arrayExp);
 
             if(!(instanceType instanceof ArrayType))
                 errors.add(new ArrayExpected(arrayExp));
 
             return new IntType();
         } else if (exp instanceof MethodCall) {
+            MethodCall methodCall = (MethodCall)exp;
+            String methodName = methodCall.getMethodName().getName();
+            ArrayList<Expression> args = methodCall.getArgs();
+
+            Expression instance = methodCall.getInstance();
+
+            Type instanceType = findExpType(classesDeclaration, classesSymbolTable, instance);
+            if(!(instanceType instanceof UserDefinedType)) {
+                errors.add(new classExpected(methodCall));
+                return new NoType();
+            } else {
+                String className = ((UserDefinedType)instanceType).getName().getName();
+                if(classesSymbolTable.containsKey(className)) {
+                    SymbolTable classSymbolTable = classesSymbolTable.get(className);
+
+                    try {
+                        SymbolTableMethodItem methodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
+                        ArrayList<Type> argsType = methodItem.getArgTypes();
+
+                        if(args.size() == argsType.size()) {
+                            for(int i = 0; i < args.size(); i++) {
+                                Type currCalledArgType = findExpType(classesDeclaration, classesSymbolTable, args.get(i));
+                                Type currMethodArgType = argsType.get(i);
+
+                                boolean argMismatchType =
+                                           currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
+                                        || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
+                                        || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
+                                        || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
+                                        || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
+
+                                boolean twoSideArrayType = currMethodArgType instanceof ArrayType && currCalledArgType instanceof ArrayType;
+                                boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
+                                if(argMismatchType) {
+                                    errors.add(new ArgsMismatch(methodCall));
+                                    break;
+                                } else if(twoSideArrayType) {
+                                    if(((ArrayType)currCalledArgType).getSize() != ((ArrayType)currMethodArgType).getSize()) {
+                                        errors.add(new ArgsMismatch(methodCall));
+                                        break;
+                                    }
+                                } else if(twoSideUserDefinedType) {
+                                    String methodArg = ((UserDefinedType)currMethodArgType).getName().getName();
+                                    String calledArg = ((UserDefinedType)currCalledArgType).getName().getName();
+                                    if(!isSubType(classesDeclaration, methodArg, calledArg)) {
+                                        errors.add(new ArgsMismatch(methodCall));
+                                        break;
+                                    }
+                                }
+                            }
+                        } else {
+                            errors.add(new ArgsMismatch(methodCall));
+                        }
+                    } catch (ItemNotFoundException e) {
+                        errors.add(new UndefinedMethod(methodCall));
+                        return new NoType();
+                    }
+                } else {
+                    errors.add(new UndefinedClass(instance.getLine(), className));
+                    return new NoType();
+                }
+            }
         } else if (exp instanceof NewArray) {
         } else if (exp instanceof NewClass) {
         } else if (exp instanceof This) {
