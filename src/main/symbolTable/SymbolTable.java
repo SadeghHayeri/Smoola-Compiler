@@ -6,7 +6,7 @@ public class SymbolTable {
 
 	boolean strict;
 	public SymbolTable pre;
-	HashMap<String, SymbolTableItem> items;
+	public HashMap<String, SymbolTableItem> items;
 
 	// Static members region
 

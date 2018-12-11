@@ -18,9 +18,7 @@ import errors.Error;
 import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
 import errors.classError.UndefinedClass;
-import errors.classError.mainClassError.BadMainParent;
-import errors.classError.mainClassError.MainNotFound;
-import errors.classError.mainClassError.TooManyMethods;
+import errors.classError.mainClassError.*;
 import errors.expressionError.ArrayExpected;
 import errors.expressionError.BadIndexType;
 import errors.expressionError.UnsupportedOperand;
@@ -36,6 +34,7 @@ import symbolTable.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 public class ErrorChecker {
     public static ArrayList<Error> errors = new ArrayList<>();
@@ -101,27 +100,41 @@ public class ErrorChecker {
     }
 
     static void checkMainClassErrors(Program program) {
-        if(!program.getClasses().isEmpty()) {
-            ClassDeclaration firstClass = program.getClasses().get(0);
-            MethodDeclaration mainMethod = getMainMethod(firstClass);
-            boolean hasTooManyMethods = firstClass.getMethodDeclarations().size() != 1;
+        boolean mainClassSeen = false;
+        List<ClassDeclaration> classes = program.getClasses();
+        if(!classes.isEmpty()) {
+            for (int i = 0; i < classes.size(); i++) {
+                boolean isMainClass = getMainMethod(classes.get(i)) != null;
+                if(isMainClass) {
+                    ClassDeclaration mainClass = classes.get(i);
+                    MethodDeclaration mainMethod = getMainMethod(mainClass);
 
-            if(firstClass.getParentName() != null)
-                errors.add(new BadMainParent(firstClass));
-            if(mainMethod != null && hasTooManyMethods)
-                errors.add(new TooManyMethods(firstClass));
-            if(mainMethod == null)
-                errors.add(new MainNotFound());
+                    if(mainClassSeen) {
+                        errors.add(new MainRedefinition(mainClass));
+                    } else {
+                        if(i != 0)
+                            errors.add(new BadMainPlacement(mainClass));
 
-            if(mainMethod != null) {
-                boolean badMainMethodArgs = !mainMethod.getArgs().isEmpty();
-                boolean badMainReturnType = !(mainMethod.getReturnType() instanceof IntType);
+                        if(mainClass.getParentName() != null)
+                            errors.add(new BadMainParent(mainClass));
 
-                if(badMainMethodArgs)
-                    errors.add(new BadMainArgs(mainMethod));
-                if(badMainReturnType)
-                    errors.add(new BadMainReturnType(mainMethod));
+                        boolean hasTooManyMethods = mainClass.getMethodDeclarations().size() != 1;
+                        if(hasTooManyMethods)
+                            errors.add(new TooManyMethods(mainClass));
+
+                        boolean badMainMethodArgs = !mainMethod.getArgs().isEmpty();
+                        if(badMainMethodArgs)
+                            errors.add(new BadMainArgs(mainMethod));
+
+                        boolean badMainReturnType = !(mainMethod.getReturnType() instanceof IntType);
+                        if(badMainReturnType)
+                            errors.add(new BadMainReturnType(mainMethod));
+                    }
+                    mainClassSeen = true;
+                }
             }
+            if(!mainClassSeen)
+                errors.add(new MainNotFound());
         }
     }
 
@@ -327,23 +340,25 @@ public class ErrorChecker {
                                 Type currCalledArgType = findExpType(classesDeclaration, classesSymbolTable, args.get(i));
                                 Type currMethodArgType = argsType.get(i);
 
-                                boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
-                                boolean argMismatchType =
-                                        currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
-                                                || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
-                                                || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
-                                                || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
-                                                || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
+                                if(!(currCalledArgType instanceof NoType)) {
+                                    boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
+                                    boolean argMismatchType =
+                                            currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
+                                                    || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
+                                                    || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
+                                                    || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
+                                                    || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
 
-                                if(argMismatchType) {
-                                    errors.add(new ArgsMismatch(methodCall));
-                                    return methodItem.getReturnType();
-                                } else if(twoSideUserDefinedType) {
-                                    String methodArgClassName = ((UserDefinedType)currMethodArgType).getName().getName();
-                                    String calledArgClassName = ((UserDefinedType)currCalledArgType).getName().getName();
-                                    if(!isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                                    if (argMismatchType) {
                                         errors.add(new ArgsMismatch(methodCall));
                                         return methodItem.getReturnType();
+                                    } else if (twoSideUserDefinedType) {
+                                        String methodArgClassName = ((UserDefinedType) currMethodArgType).getName().getName();
+                                        String calledArgClassName = ((UserDefinedType) currCalledArgType).getName().getName();
+                                        if (!isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                                            errors.add(new ArgsMismatch(methodCall));
+                                            return methodItem.getReturnType();
+                                        }
                                     }
                                 }
                             }
