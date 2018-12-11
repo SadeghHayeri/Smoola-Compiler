@@ -204,7 +204,7 @@ public class VisitorImpl implements Visitor {
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
             // check return type
             Type returnType = methodDeclaration.getReturnType();
-            Type returnValueType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
+            Type returnValueType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
             if(!(returnValueType instanceof NoType)) {
                 boolean twoSideUserDefinedType = returnType instanceof UserDefinedType && returnValueType instanceof UserDefinedType;
                 boolean argMismatchType =
@@ -553,7 +553,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type conditionType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
+                Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
                 boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
                 if(!validConditionType)
                     ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
@@ -579,7 +579,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type conditionType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
+                Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
                 boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
                 if(!validConditionType)
                     ErrorChecker.addError(new BadConditionType(loop.getCondition()));
@@ -603,7 +603,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type insideType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, write.getArg());
+                Type insideType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, write.getArg());
                 boolean validInsideType =
                            insideType instanceof IntType
                         || insideType instanceof StringType
@@ -630,7 +630,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
+                ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
                 if(!semiStatement.isEmpty()) {
                     Expression expression = semiStatement.getInside();
                     if (expression instanceof BinaryExpression) {
