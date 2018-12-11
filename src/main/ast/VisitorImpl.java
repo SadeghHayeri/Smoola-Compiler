@@ -50,13 +50,16 @@ public class VisitorImpl implements Visitor {
         classesDeclaration = new HashMap<>();
         program.accept(this);
 
+        currentPass = Passes.FIND_METHODS;
+        classesSymbolTable = new HashMap<>();
+        program.accept(this);
+
         ErrorChecker.checkHasAnyClass(program);
         ErrorChecker.checkMainClassErrors(program);
         ErrorChecker.checkCircularInheritance(classesDeclaration);
 
         if(!ErrorChecker.hasCriticalError()) {
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
-            classesSymbolTable = new HashMap<>();
             program.accept(this);
 
             this.currentPass = Passes.PASS3;
@@ -121,29 +124,12 @@ public class VisitorImpl implements Visitor {
                             ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
                         }
                     }
-
                     SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
                     classesSymbolTable.put(className, symbolTable);
                     SymbolTable.top = symbolTable;
                 break;
             case FILL_SYMBOL_TABLE:
-
-
-                SymbolTable parentSymbolTable = null;
-                if(classDeclaration.hasParent()) {
-                    String parentName = classDeclaration.getParentName().getName();
-                    if(classesDeclaration.containsKey(parentName)) {
-                        ClassDeclaration parent = classesDeclaration.get(parentName);
-                        parent.accept(this);
-                        parentSymbolTable = classesSymbolTable.get(parentName);
-                    } else {
-                        ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
-                    }
-                }
-
-                SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
-                classesSymbolTable.put(className, symbolTable);
-                SymbolTable.top = symbolTable;
+                SymbolTable.top = classesSymbolTable.get(className);
                 break;
             case PASS3:
                 break;
@@ -167,15 +153,12 @@ public class VisitorImpl implements Visitor {
             case FIND_CLASSES:
                 break;
             case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
                 try {
                     String methodName = methodDeclaration.getName().getName();
                     ArrayList<Type> argsType = methodDeclaration.getArgsType();
                     Type returnType = methodDeclaration.getReturnType();
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType, returnType);
                     SymbolTable.top.put(method);
-                    SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 } catch (ItemAlreadyExistsException e) {
                     ErrorChecker.addError(new MethodRedefinition(methodDeclaration));
                     String newName = methodDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
@@ -185,29 +168,11 @@ public class VisitorImpl implements Visitor {
                     return;
                 }
                 break;
+            case FILL_SYMBOL_TABLE:
+                SymbolTable.push(new SymbolTable(SymbolTable.top, false));
+                break;
             case PASS3:
-                // check return type
-                Type returnType = methodDeclaration.getReturnType();
-                Type returnValueType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
-                if(!(returnValueType instanceof NoType)) {
-                    boolean twoSideUserDefinedType = returnType instanceof UserDefinedType && returnValueType instanceof UserDefinedType;
-                    boolean argMismatchType =
-                            returnType instanceof IntType && !(returnValueType instanceof IntType)
-                                    || returnType instanceof BooleanType && !(returnValueType instanceof BooleanType)
-                                    || returnType instanceof StringType && !(returnValueType instanceof StringType)
-                                    || returnType instanceof ArrayType && !(returnValueType instanceof ArrayType)
-                                    || returnType instanceof UserDefinedType && !(returnValueType instanceof UserDefinedType);
-
-                    if (argMismatchType) {
-                        ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
-                    } else if (twoSideUserDefinedType) {
-                        String methodArgClassName = ((UserDefinedType) returnType).getName().getName();
-                        String calledArgClassName = ((UserDefinedType) returnValueType).getName().getName();
-                        if (!ErrorChecker.isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
-                            ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
-                        }
-                    }
-                }
+                break;
             case PRE_ORDER_PRINT:
                 Util.info(methodDeclaration.toString());
                 break;
@@ -223,6 +188,29 @@ public class VisitorImpl implements Visitor {
         methodDeclaration.getReturnValue().accept(this);
 
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
+            // check return type
+            Type returnType = methodDeclaration.getReturnType();
+            Type returnValueType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
+            if(!(returnValueType instanceof NoType)) {
+                boolean twoSideUserDefinedType = returnType instanceof UserDefinedType && returnValueType instanceof UserDefinedType;
+                boolean argMismatchType =
+                        returnType instanceof IntType && !(returnValueType instanceof IntType)
+                                || returnType instanceof BooleanType && !(returnValueType instanceof BooleanType)
+                                || returnType instanceof StringType && !(returnValueType instanceof StringType)
+                                || returnType instanceof ArrayType && !(returnValueType instanceof ArrayType)
+                                || returnType instanceof UserDefinedType && !(returnValueType instanceof UserDefinedType);
+
+                if (argMismatchType) {
+                    ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
+                } else if (twoSideUserDefinedType) {
+                    String methodArgClassName = ((UserDefinedType) returnType).getName().getName();
+                    String calledArgClassName = ((UserDefinedType) returnValueType).getName().getName();
+                    if (!ErrorChecker.isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                        ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
+                    }
+                }
+            }
+
             SymbolTable.pop();
         }
     }
@@ -420,7 +408,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                SymbolTable classSymbolTable = SymbolTable.top.pre;
+                SymbolTable classSymbolTable = SymbolTable.top.getPreSymbolTable();
                 String className = Util.findClassNameBySymbolTable(classesSymbolTable, classSymbolTable);
                 instance.setClassRef(classesDeclaration.get(className));
                 break;
@@ -611,9 +599,9 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
+                ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
                 break;
             case PASS3:
-                ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
                 break;
             case PRE_ORDER_PRINT:
 //                Util.info();(semiStatement.toString());
