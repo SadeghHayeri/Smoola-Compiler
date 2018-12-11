@@ -5,13 +5,8 @@ import java.util.*;
 public class SymbolTable {
 
 	boolean strict;
-<<<<<<< Updated upstream
-	SymbolTable pre;
-	HashMap<String, SymbolTableItem> items;
-=======
 	public SymbolTable pre;
 	public HashMap<String, SymbolTableItem> items;
->>>>>>> Stashed changes
 
 	// Static members region
 
