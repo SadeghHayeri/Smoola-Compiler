@@ -600,6 +600,18 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
+                if(!semiStatement.isEmpty()) {
+                    Expression expression = semiStatement.getInside();
+                    if (expression instanceof BinaryExpression) {
+                        BinaryExpression binaryExpression = (BinaryExpression) semiStatement.getInside();
+                        if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
+                            Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
+                            assign.accept(this);
+                            return;
+                        }
+                    }
+                }
+                ErrorChecker.addError(new NotAStatement(semiStatement));
                 break;
             case PASS3:
                 break;
@@ -607,18 +619,5 @@ public class VisitorImpl implements Visitor {
 //                Util.info();(semiStatement.toString());
                 break;
         }
-
-        if(!semiStatement.isEmpty()) {
-            Expression expression = semiStatement.getInside();
-            if (expression instanceof BinaryExpression) {
-                BinaryExpression binaryExpression = (BinaryExpression) semiStatement.getInside();
-                if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
-                    Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
-                    assign.accept(this);
-                    return;
-                }
-            }
-        }
-        ErrorChecker.addError(new NotAStatement(semiStatement));
     }
 }

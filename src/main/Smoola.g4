@@ -112,7 +112,7 @@ statementBlock returns [Statement stmt]
 statement returns [Statement stmt]
     : IF pe=parExpression THEN s1=statementBlock { Conditional con = new Conditional($IF.line, $pe.exp, $s1.stmt); } (ELSE s2=statementBlock { con.setAlternativeBody($s2.stmt); })? { $stmt = con; }
     | WHILE pe=parExpression s=statementBlock { $stmt = new While($WHILE.line, $pe.exp, $s.stmt); }
-    | WRITELN LPAREN expression RPAREN { $stmt = new Write($WRITELN.line, $expression.exp); }
+    | WRITELN LPAREN expression RPAREN SEMI{ $stmt = new Write($WRITELN.line, $expression.exp); }
     | expression SEMI { $stmt = new SemiStatement($SEMI.line, $expression.exp); }
     | SEMI { $stmt = new SemiStatement($SEMI.line); }
     ;
