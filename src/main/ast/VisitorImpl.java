@@ -19,6 +19,7 @@ import ast.node.statement.*;
 import errors.Error;
 import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
+import errors.expressionError.BadWritelnType;
 import errors.methodError.ArgsMismatch;
 import errors.methodError.BadReturnType;
 import errors.methodError.MethodRedefinition;
@@ -580,6 +581,14 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
+                Type insideType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, write.getArg());
+                boolean validInsideType =
+                           insideType instanceof IntType
+                        || insideType instanceof StringType
+                        || insideType instanceof ArrayType
+                        || insideType instanceof NoType;
+                if(!validInsideType)
+                    ErrorChecker.addError(new BadWritelnType(write));
                 break;
             case PASS3:
                 break;
