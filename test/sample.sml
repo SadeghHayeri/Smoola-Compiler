@@ -1,15 +1,20 @@
-
 class Test {
-	def func(arg1 : int, arg2 : int) : int {
-	    var x : int;
-	    var y : MYclass;
-
-	    a == b;
-	    if(a / b) then;
-
-		while(a) {
-		    a == b;
-		}
+	def main() : int {
 		return 0;
 	}
+}
+
+class Test2 {
+	def main() : int {
+	    var x : int;
+	    var ins : X;
+	    ins = new X();
+		return ins.x();
+	}
+}
+
+class X {
+	def x() : int {
+        return 0;
+    }
 }

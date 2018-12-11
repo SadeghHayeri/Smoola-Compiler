@@ -327,23 +327,25 @@ public class ErrorChecker {
                                 Type currCalledArgType = findExpType(classesDeclaration, classesSymbolTable, args.get(i));
                                 Type currMethodArgType = argsType.get(i);
 
-                                boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
-                                boolean argMismatchType =
-                                        currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
-                                                || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
-                                                || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
-                                                || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
-                                                || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
+                                if(!(currCalledArgType instanceof NoType)) {
+                                    boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
+                                    boolean argMismatchType =
+                                            currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
+                                                    || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
+                                                    || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
+                                                    || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
+                                                    || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
 
-                                if(argMismatchType) {
-                                    errors.add(new ArgsMismatch(methodCall));
-                                    return methodItem.getReturnType();
-                                } else if(twoSideUserDefinedType) {
-                                    String methodArgClassName = ((UserDefinedType)currMethodArgType).getName().getName();
-                                    String calledArgClassName = ((UserDefinedType)currCalledArgType).getName().getName();
-                                    if(!isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                                    if (argMismatchType) {
                                         errors.add(new ArgsMismatch(methodCall));
                                         return methodItem.getReturnType();
+                                    } else if (twoSideUserDefinedType) {
+                                        String methodArgClassName = ((UserDefinedType) currMethodArgType).getName().getName();
+                                        String calledArgClassName = ((UserDefinedType) currCalledArgType).getName().getName();
+                                        if (!isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                                            errors.add(new ArgsMismatch(methodCall));
+                                            return methodItem.getReturnType();
+                                        }
                                     }
                                 }
                             }
