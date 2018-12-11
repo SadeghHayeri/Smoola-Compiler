@@ -19,6 +19,7 @@ import ast.node.statement.*;
 import errors.Error;
 import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
+import errors.expressionError.BadConditionType;
 import errors.expressionError.BadWritelnType;
 import errors.methodError.ArgsMismatch;
 import errors.methodError.BadReturnType;
@@ -561,6 +562,10 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
+                Type conditionType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
+                boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
+                if(!validConditionType)
+                    ErrorChecker.addError(new BadConditionType(loop.getCondition()));
                 break;
             case PASS3:
                 break;
