@@ -321,16 +321,13 @@ public class ErrorChecker {
             MethodCall methodCall = (MethodCall)exp;
             String methodName = methodCall.getMethodName().getName();
             ArrayList<Expression> args = methodCall.getArgs();
-
             Expression instance = methodCall.getInstance();
 
             Type instanceType = findExpType(classesDeclaration, classesSymbolTable, instance);
-
             if(instanceType instanceof UserDefinedType) {
                 String className = ((UserDefinedType)instanceType).getName().getName();
                 if(classesSymbolTable.containsKey(className)) {
                     SymbolTable classSymbolTable = classesSymbolTable.get(className);
-
                     try {
                         SymbolTableMethodItem methodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
                         ArrayList<Type> argsType = methodItem.getArgTypes();
@@ -362,6 +359,7 @@ public class ErrorChecker {
                                     }
                                 }
                             }
+                            return methodItem.getReturnType();
                         } else {
                             errors.add(new ArgsMismatch(methodCall));
                         }
