@@ -1,6 +1,12 @@
 package ast;
 
+import ast.Type.ArrayType.ArrayType;
+import ast.Type.NoType;
+import ast.Type.PrimitiveType.BooleanType;
+import ast.Type.PrimitiveType.IntType;
+import ast.Type.PrimitiveType.StringType;
 import ast.Type.Type;
+import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
@@ -13,6 +19,8 @@ import ast.node.statement.*;
 import errors.Error;
 import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
+import errors.methodError.ArgsMismatch;
+import errors.methodError.BadReturnType;
 import errors.methodError.MethodRedefinition;
 import errors.variableError.VariableRedefinition;
 import errors.statementError.NotAStatement;
@@ -26,6 +34,7 @@ public class VisitorImpl implements Visitor {
 
     private enum Passes {
         FIND_CLASSES,
+        FIND_METHODS,
         FILL_SYMBOL_TABLE,
         PASS3,
         PRE_ORDER_PRINT
@@ -67,6 +76,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -96,9 +107,27 @@ public class VisitorImpl implements Visitor {
                 }
                 return;
 //                break;
+                case FIND_METHODS:
+                    boolean hasSymbolTable = classesSymbolTable.containsKey(className);
+                    if(hasSymbolTable) return;
+                    SymbolTable parentSymbolTable = null;
+                    if(classDeclaration.hasParent()) {
+                        String parentName = classDeclaration.getParentName().getName();
+                        if(classesDeclaration.containsKey(parentName)) {
+                            ClassDeclaration parent = classesDeclaration.get(parentName);
+                            parent.accept(this);
+                            parentSymbolTable = classesSymbolTable.get(parentName);
+                        } else {
+                            ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
+                        }
+                    }
+
+                    SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
+                    classesSymbolTable.put(className, symbolTable);
+                    SymbolTable.top = symbolTable;
+                break;
             case FILL_SYMBOL_TABLE:
-                boolean hasSymbolTable = classesSymbolTable.containsKey(className);
-                if(hasSymbolTable) return;
+
 
                 SymbolTable parentSymbolTable = null;
                 if(classDeclaration.hasParent()) {
@@ -137,6 +166,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 try {
                     String methodName = methodDeclaration.getName().getName();
@@ -155,7 +186,28 @@ public class VisitorImpl implements Visitor {
                 }
                 break;
             case PASS3:
-                break;
+                // check return type
+                Type returnType = methodDeclaration.getReturnType();
+                Type returnValueType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
+                if(!(returnValueType instanceof NoType)) {
+                    boolean twoSideUserDefinedType = returnType instanceof UserDefinedType && returnValueType instanceof UserDefinedType;
+                    boolean argMismatchType =
+                            returnType instanceof IntType && !(returnValueType instanceof IntType)
+                                    || returnType instanceof BooleanType && !(returnValueType instanceof BooleanType)
+                                    || returnType instanceof StringType && !(returnValueType instanceof StringType)
+                                    || returnType instanceof ArrayType && !(returnValueType instanceof ArrayType)
+                                    || returnType instanceof UserDefinedType && !(returnValueType instanceof UserDefinedType);
+
+                    if (argMismatchType) {
+                        ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
+                    } else if (twoSideUserDefinedType) {
+                        String methodArgClassName = ((UserDefinedType) returnType).getName().getName();
+                        String calledArgClassName = ((UserDefinedType) returnValueType).getName().getName();
+                        if (!ErrorChecker.isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
+                            ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
+                        }
+                    }
+                }
             case PRE_ORDER_PRINT:
                 Util.info(methodDeclaration.toString());
                 break;
@@ -179,6 +231,8 @@ public class VisitorImpl implements Visitor {
     public void visit(VarDeclaration varDeclaration) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 try {
@@ -205,6 +259,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -222,6 +278,8 @@ public class VisitorImpl implements Visitor {
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -241,6 +299,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -255,6 +315,8 @@ public class VisitorImpl implements Visitor {
     public void visit(Length length) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -272,6 +334,8 @@ public class VisitorImpl implements Visitor {
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -293,6 +357,8 @@ public class VisitorImpl implements Visitor {
     public void visit(NewArray newArray) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 Expression exp = newArray.getExpression();
@@ -332,6 +398,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -348,6 +416,8 @@ public class VisitorImpl implements Visitor {
     public void visit(This instance) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 SymbolTable classSymbolTable = SymbolTable.top.pre;
@@ -367,6 +437,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -384,6 +456,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -398,6 +472,8 @@ public class VisitorImpl implements Visitor {
     public void visit(IntValue value) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -414,6 +490,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -428,6 +506,8 @@ public class VisitorImpl implements Visitor {
     public void visit(Assign assign) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -447,6 +527,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -464,6 +546,8 @@ public class VisitorImpl implements Visitor {
     public void visit(Conditional conditional) {
         switch (currentPass) {
             case FIND_CLASSES:
+                break;
+            case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
@@ -485,6 +569,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -503,6 +589,8 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
@@ -520,9 +608,12 @@ public class VisitorImpl implements Visitor {
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
+            case FIND_METHODS:
+                break;
             case FILL_SYMBOL_TABLE:
                 break;
             case PASS3:
+                ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
                 break;
             case PRE_ORDER_PRINT:
 //                Util.info();(semiStatement.toString());
