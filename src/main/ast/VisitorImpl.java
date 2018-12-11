@@ -553,6 +553,10 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
+                Type conditionType = ErrorChecker.findExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
+                boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
+                if(!validConditionType)
+                    ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
                 break;
             case PASS3:
                 break;

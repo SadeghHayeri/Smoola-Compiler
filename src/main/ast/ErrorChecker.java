@@ -183,7 +183,7 @@ public class ErrorChecker {
             ArrayCall arrayCall = (ArrayCall)exp;
             Type instanceType = findExpType(classesDeclaration, classesSymbolTable, arrayCall.getInstance());
 
-            if(!(instanceType instanceof ArrayType))
+            if(!(instanceType instanceof ArrayType || instanceType instanceof NoType))
                 errors.add(new ArrayExpected(arrayCall.getInstance()));
 
             return new IntType();
@@ -298,11 +298,11 @@ public class ErrorChecker {
             UnaryOperator operator = unaryExpression.getUnaryOperator();
 
             if(operator == UnaryOperator.minus) {
-                if(!(expType instanceof IntType))
+                if(!(expType instanceof IntType || expType instanceof NoType))
                     errors.add(new UnsupportedOperand(unaryExpression));
                 return new IntType();
             } else if(operator == UnaryOperator.not) {
-                if(!(expType instanceof BooleanType))
+                if(!(expType instanceof BooleanType || expType instanceof NoType))
                     errors.add(new UnsupportedOperand(unaryExpression));
                 return new BooleanType();
             }

@@ -11,6 +11,6 @@ public class ArrayExpected extends ExpressionError {
 
     @Override
     public String toString() {
-        return String.format("Line:%d:array call on not array type", line);
+        return String.format("Line:%d:Array Expected", line);
     }
 }
