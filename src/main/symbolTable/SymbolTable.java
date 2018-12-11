@@ -5,7 +5,7 @@ import java.util.*;
 public class SymbolTable {
 
 	boolean strict;
-	SymbolTable pre;
+	public SymbolTable pre;
 	HashMap<String, SymbolTableItem> items;
 
 	// Static members region
