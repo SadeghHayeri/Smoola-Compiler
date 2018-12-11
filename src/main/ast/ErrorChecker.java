@@ -22,6 +22,7 @@ import errors.classError.mainClassError.BadMainParent;
 import errors.classError.mainClassError.MainNotFound;
 import errors.classError.mainClassError.TooManyMethods;
 import errors.expressionError.ArrayExpected;
+import errors.expressionError.BadIndexType;
 import errors.expressionError.UnsupportedOperand;
 import errors.methodError.ArgsMismatch;
 import errors.methodError.UndefinedMethod;
@@ -311,10 +312,8 @@ public class ErrorChecker {
             Expression instance = methodCall.getInstance();
 
             Type instanceType = findExpType(classesDeclaration, classesSymbolTable, instance);
-            if(!(instanceType instanceof UserDefinedType)) {
-                errors.add(new classExpected(methodCall));
-                return new NoType();
-            } else {
+
+            if(instanceType instanceof UserDefinedType) {
                 String className = ((UserDefinedType)instanceType).getName().getName();
                 if(classesSymbolTable.containsKey(className)) {
                     SymbolTable classSymbolTable = classesSymbolTable.get(className);
@@ -328,29 +327,23 @@ public class ErrorChecker {
                                 Type currCalledArgType = findExpType(classesDeclaration, classesSymbolTable, args.get(i));
                                 Type currMethodArgType = argsType.get(i);
 
-                                boolean argMismatchType =
-                                           currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
-                                        || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
-                                        || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
-                                        || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
-                                        || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
-
-                                boolean twoSideArrayType = currMethodArgType instanceof ArrayType && currCalledArgType instanceof ArrayType;
                                 boolean twoSideUserDefinedType = currMethodArgType instanceof UserDefinedType && currCalledArgType instanceof UserDefinedType;
+                                boolean argMismatchType =
+                                        currMethodArgType instanceof IntType && !(currCalledArgType instanceof IntType)
+                                                || currMethodArgType instanceof BooleanType && !(currCalledArgType instanceof BooleanType)
+                                                || currMethodArgType instanceof StringType && !(currCalledArgType instanceof StringType)
+                                                || currMethodArgType instanceof ArrayType && !(currCalledArgType instanceof ArrayType)
+                                                || currMethodArgType instanceof UserDefinedType && !(currCalledArgType instanceof UserDefinedType);
+
                                 if(argMismatchType) {
                                     errors.add(new ArgsMismatch(methodCall));
-                                    break;
-                                } else if(twoSideArrayType) {
-                                    if(((ArrayType)currCalledArgType).getSize() != ((ArrayType)currMethodArgType).getSize()) {
-                                        errors.add(new ArgsMismatch(methodCall));
-                                        break;
-                                    }
+                                    return methodItem.getReturnType();
                                 } else if(twoSideUserDefinedType) {
-                                    String methodArg = ((UserDefinedType)currMethodArgType).getName().getName();
-                                    String calledArg = ((UserDefinedType)currCalledArgType).getName().getName();
-                                    if(!isSubType(classesDeclaration, methodArg, calledArg)) {
+                                    String methodArgClassName = ((UserDefinedType)currMethodArgType).getName().getName();
+                                    String calledArgClassName = ((UserDefinedType)currCalledArgType).getName().getName();
+                                    if(!isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
                                         errors.add(new ArgsMismatch(methodCall));
-                                        break;
+                                        return methodItem.getReturnType();
                                     }
                                 }
                             }
@@ -365,10 +358,29 @@ public class ErrorChecker {
                     errors.add(new UndefinedClass(instance.getLine(), className));
                     return new NoType();
                 }
+            } else if(instanceType instanceof NoType) {
+                return new NoType();
+            } else {
+                errors.add(new classExpected(methodCall));
+                return new NoType();
             }
         } else if (exp instanceof NewArray) {
+            Expression arrayExp = ((NewArray)exp).getExpression();
+            Type arrayExpType = findExpType(classesDeclaration, classesSymbolTable, arrayExp);
+            if(!(arrayExpType instanceof IntType || arrayExpType instanceof NoType))
+                errors.add(new BadIndexType(arrayExp));
+            return new ArrayType();
         } else if (exp instanceof NewClass) {
+            String className = ((NewClass)exp).getClassName().getName();
+            if(classesDeclaration.containsKey(className)) {
+                return new UserDefinedType(new Identifier(exp.getLine(), className));
+            } else {
+                errors.add(new UndefinedClass(exp.getLine(), className));
+                return new NoType();
+            }
         } else if (exp instanceof This) {
+            String className = ((This)exp).getClassRef().getName().getName();
+            return new UserDefinedType(new Identifier(exp.getLine(), className));
         }
 
         return new NoType();

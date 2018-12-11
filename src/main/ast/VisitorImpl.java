@@ -350,6 +350,9 @@ public class VisitorImpl implements Visitor {
             case FIND_CLASSES:
                 break;
             case FILL_SYMBOL_TABLE:
+                SymbolTable classSymbolTable = SymbolTable.top.pre;
+                String className = Util.findClassNameBySymbolTable(classesSymbolTable, classSymbolTable);
+                instance.setClassRef(classesDeclaration.get(className));
                 break;
             case PASS3:
                 break;

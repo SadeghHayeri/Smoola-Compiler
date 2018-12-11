@@ -1,10 +1,22 @@
 package ast;
 
+import ast.Type.NoType;
+import ast.Type.PrimitiveType.BooleanType;
+import ast.Type.PrimitiveType.IntType;
+import ast.Type.PrimitiveType.StringType;
+import ast.Type.Type;
+import ast.node.expression.*;
+import ast.node.expression.Value.BooleanValue;
+import ast.node.expression.Value.IntValue;
+import ast.node.expression.Value.StringValue;
+import symbolTable.SymbolTable;
+
+import java.util.HashMap;
 import java.util.UUID;
 
 public class Util {
 
-    public static boolean colorful = false;
+    public static boolean colorful = true;
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
@@ -32,5 +44,12 @@ public class Util {
 
     public static String uniqueRandomString() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String findClassNameBySymbolTable(HashMap<String, SymbolTable> classesSymbolTable, SymbolTable symbolTable) {
+        for(String key : classesSymbolTable.keySet())
+            if(classesSymbolTable.get(key) == symbolTable)
+                return key;
+        return null;
     }
 }
