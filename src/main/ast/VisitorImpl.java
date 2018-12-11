@@ -24,6 +24,7 @@ import errors.expressionError.BadWritelnType;
 import errors.methodError.ArgsMismatch;
 import errors.methodError.BadReturnType;
 import errors.methodError.MethodRedefinition;
+import errors.statementError.BadLeftValue;
 import errors.variableError.VariableRedefinition;
 import errors.statementError.NotAStatement;
 import errors.classError.UndefinedClass;
@@ -500,6 +501,8 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
+                if(!(assign.getlValue() instanceof Identifier || assign.getlValue() instanceof ArrayCall))
+                    ErrorChecker.addError(new BadLeftValue(assign.getlValue()));
                 break;
             case PASS3:
                 break;
