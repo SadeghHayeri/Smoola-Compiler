@@ -160,6 +160,17 @@ public class VisitorImpl implements Visitor {
                     String methodName = methodDeclaration.getName().getName();
                     ArrayList<Type> argsType = methodDeclaration.getArgsType();
                     Type returnType = methodDeclaration.getReturnType();
+
+                    // set classDeclaration
+                    if(returnType instanceof UserDefinedType) {
+                        UserDefinedType userDefinedType = (UserDefinedType)returnType;
+                        String className = userDefinedType.getName().getName();
+                        if(classesDeclaration.containsKey(className))
+                            userDefinedType.setClassDeclaration(classesDeclaration.get(className));
+                        else
+                            ErrorChecker.addError(new UndefinedClass(methodDeclaration.getLine(), className));
+                    }
+
                     SymbolTableMethodItem method = new SymbolTableMethodItem(methodName, argsType, returnType);
                     SymbolTable.top.put(method);
                 } catch (ItemAlreadyExistsException e) {
@@ -213,7 +224,6 @@ public class VisitorImpl implements Visitor {
                     }
                 }
             }
-
             SymbolTable.pop();
         }
     }
