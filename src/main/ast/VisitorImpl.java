@@ -1,12 +1,6 @@
 package ast;
 
-import ast.Type.ArrayType.ArrayType;
-import ast.Type.NoType;
-import ast.Type.PrimitiveType.BooleanType;
-import ast.Type.PrimitiveType.IntType;
-import ast.Type.PrimitiveType.StringType;
 import ast.Type.Type;
-import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
@@ -21,7 +15,6 @@ import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
 import errors.expressionError.BadConditionType;
 import errors.expressionError.BadWritelnType;
-import errors.methodError.ArgsMismatch;
 import errors.methodError.BadReturnType;
 import errors.methodError.MethodRedefinition;
 import errors.statementError.BadLeftValue;
@@ -33,6 +26,7 @@ import symbolTable.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static ast.EXP.*;
 import static ast.TCH.*;
 
 public class VisitorImpl implements Visitor {
@@ -205,9 +199,9 @@ public class VisitorImpl implements Visitor {
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
             // check return type
             Type returnType = methodDeclaration.getReturnType();
-            Type returnValueType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
+            Type returnValueType = getExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
             if(!isNoType(returnValueType))
-                if(!ErrorChecker.canAssign(classesDeclaration, classesSymbolTable, returnType, returnValueType))
+                if(!canAssign(classesDeclaration, classesSymbolTable, returnType, returnValueType))
                     ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
 
             SymbolTable.pop();
@@ -349,7 +343,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Expression exp = newArray.getExpression();
-                if(ErrorChecker.isIntValue(exp)) {
+                if(isIntValue(exp)) {
                     int value = ((IntValue)exp).getConstant();
                     if(value == 0)
                         ErrorChecker.addError(new BadArraySize(newArray));
@@ -497,7 +491,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                if(!ErrorChecker.isLeftValue(assign.getlValue()))
+                if(!isLeftValue(assign.getlValue()))
                     ErrorChecker.addError(new BadLeftValue(assign.getlValue()));
                 break;
             case PASS3:
@@ -539,7 +533,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
+                Type conditionType = getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
                 break;
@@ -564,7 +558,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
+                Type conditionType = getExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(loop.getCondition()));
                 break;
@@ -587,7 +581,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                Type insideType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, write.getArg());
+                Type insideType = getExpType(classesDeclaration, classesSymbolTable, write.getArg());
                 boolean validInsideType = isInt(insideType) || isString(insideType) || isArray(insideType) || isNoType(insideType);
                 if(!validInsideType)
                     ErrorChecker.addError(new BadWritelnType(write));
@@ -612,11 +606,11 @@ public class VisitorImpl implements Visitor {
             case FILL_SYMBOL_TABLE:
                 if(!semiStatement.isEmpty()) {
                     // type check inside exp
-                    ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
+                    getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
 
                     // convert to AssignStatement
-                    if (ErrorChecker.isBinaryExpression(semiStatement.getInside())) {
-                        BinaryExpression binaryExpression = ErrorChecker.BE(semiStatement.getInside());
+                    if (isBinaryExpression(semiStatement.getInside())) {
+                        BinaryExpression binaryExpression = BE(semiStatement.getInside());
                         if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
                             Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
                             assign.accept(this);

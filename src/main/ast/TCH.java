@@ -49,8 +49,6 @@ public class TCH {
         return typeToString(left).equals(typeToString(right));
     }
     static boolean haveSameType(Type left, Type right) { return haveSameType(left, right, false); }
-
-
 }
 
 
