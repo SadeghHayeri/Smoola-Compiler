@@ -114,6 +114,12 @@ public class EXP {
         }
     }
 
+    static ClassDeclaration getCurrentClassDeclaration(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable) {
+        SymbolTable classSymbolTable = SymbolTable.top.getPreSymbolTable();
+        String className = Util.findClassNameBySymbolTable(classesSymbolTable, classSymbolTable);
+        return classesDeclaration.get(className);
+    }
+
     static Type getExpType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, Expression exp) {
         switch (expType(exp)) {
             case BOOLEAN:
@@ -125,6 +131,7 @@ public class EXP {
             case IDENTIFIER:
                 return getIdentifierType(ID(exp));
             case THIS:
+                THIS(exp).setClassRef(EXP.getCurrentClassDeclaration(classesDeclaration, classesSymbolTable));
                 String refName = THIS(exp).getClassRef().getName().getName();
                 return new UserDefinedType(new Identifier(exp.getLine(), refName));
             case NEW_CLASS:
@@ -150,46 +157,7 @@ public class EXP {
                 if(!isIntOrNoType(indexExpType)) ErrorChecker.addError(new BadIndexType(NA(exp).getExpression()));
                 return new ArrayType(); //TODO: set size!
             case BINARY_EXP:
-                Type leftType = getExpType(classesDeclaration, classesSymbolTable, BE(exp).getLeft());
-                Type rightType = getExpType(classesDeclaration, classesSymbolTable, BE(exp).getRight());
-
-                BinaryOperator operator = BE(exp).getBinaryOperator();
-                boolean isArithmeticOperator = operator == BinaryOperator.mult
-                        || operator == BinaryOperator.div
-                        || operator == BinaryOperator.add
-                        || operator == BinaryOperator.sub;
-
-                boolean isLogicalOperator = operator == BinaryOperator.and
-                        || operator == BinaryOperator.or;
-
-                boolean isEqOrNeq = operator == BinaryOperator.eq
-                        || operator == BinaryOperator.neq;
-
-                boolean isAssign = operator == BinaryOperator.assign;
-
-                if(isArithmeticOperator) {
-                    if(!isIntOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                    if(!isIntOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                    return new IntType();
-                } else if(isLogicalOperator) {
-                    if(!isBooleanOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                    if(!isBooleanOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                    return new BooleanType();
-                } else if(isEqOrNeq) {
-                    if(!haveSameType(leftType, rightType)) ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                    return new BooleanType();
-                } else if(isAssign) {
-                    if(!isLeftValue(BE(exp).getLeft())) ErrorChecker.addError(new BadLeftValue(BE(exp)));
-                    if(canAssign(classesDeclaration, classesSymbolTable, leftType, rightType)) {
-                        return leftType;
-                    } else {
-                        ErrorChecker.addError(new UnsupportedOperand(BE(exp)));
-                        return new NoType();
-                    }
-                }
-
-                assert false; //TODO: check no access!
-                return new NoType();
+                return getBinaryExpressionType(classesDeclaration, classesSymbolTable, BE(exp));
             case UNARY_EXP:
                 Type expType = getExpType(classesDeclaration, classesSymbolTable, UE(exp).getValue());
                 UnaryOperator uop = UE(exp).getUnaryOperator();
@@ -213,6 +181,48 @@ public class EXP {
         return new NoType();
     }
 
+    private static Type getBinaryExpressionType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, BinaryExpression binaryExpression) {
+        Type leftType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getLeft());
+        Type rightType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getRight());
+
+        BinaryOperator operator = binaryExpression.getBinaryOperator();
+        boolean isArithmeticOperator = operator == BinaryOperator.mult
+                || operator == BinaryOperator.div
+                || operator == BinaryOperator.add
+                || operator == BinaryOperator.sub;
+
+        boolean isLogicalOperator = operator == BinaryOperator.and
+                || operator == BinaryOperator.or;
+
+        boolean isEqOrNeq = operator == BinaryOperator.eq
+                || operator == BinaryOperator.neq;
+
+        boolean isAssign = operator == BinaryOperator.assign;
+
+        if(isArithmeticOperator) {
+            if(!isIntOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!isIntOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            return new IntType();
+        } else if(isLogicalOperator) {
+            if(!isBooleanOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!isBooleanOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            return new BooleanType();
+        } else if(isEqOrNeq) {
+            if(!haveSameType(leftType, rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            return new BooleanType();
+        } else if(isAssign) {
+            if(!isLeftValue(binaryExpression.getLeft())) ErrorChecker.addError(new BadLeftValue(binaryExpression));
+            if(canAssign(classesDeclaration, classesSymbolTable, leftType, rightType)) {
+                return leftType;
+            } else {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
+        }
+
+        assert false; //TODO: check no access!
+        return new NoType();
+    }
 
     private static Type getMethodCallType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, MethodCall methodCall) {
         Expression instance = methodCall.getInstance();
