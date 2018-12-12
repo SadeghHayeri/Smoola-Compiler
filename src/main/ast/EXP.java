@@ -121,6 +121,7 @@ public class EXP {
     }
 
     static Type getExpType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, Expression exp) {
+//        System.out.println(String.valueOf(exp.getLine()) + expType(exp));
         switch (expType(exp)) {
             case BOOLEAN:
                 return new BooleanType();
@@ -147,10 +148,14 @@ public class EXP {
                 Type instanceType = getExpType(classesDeclaration, classesSymbolTable, AC(exp).getInstance());
                 if(!isArrayOrNoType(instanceType))
                     ErrorChecker.addError(new ArrayExpected(AC(exp).getInstance()));
+
+                Type indexType = getExpType(classesDeclaration, classesSymbolTable, AC(exp).getIndex());
+                if(!isIntOrNoType(indexType))
+                    ErrorChecker.addError(new BadIndexType(AC(exp)));
                 return new IntType();
             case LENGTH:
                 Type beforeExpType = getExpType(classesDeclaration, classesSymbolTable, LEN(exp).getExpression());
-                if(!isArrayOrNoType(beforeExpType)) ErrorChecker.addError(new ArrayExpected(AC(exp)));
+                if(!isArrayOrNoType(beforeExpType)) ErrorChecker.addError(new ArrayExpected(LEN(exp)));
                 return new IntType();
             case NEW_ARRAY:
                 Type indexExpType = getExpType(classesDeclaration, classesSymbolTable, NA(exp).getExpression());
@@ -249,6 +254,7 @@ public class EXP {
                         }
                         return methodItem.getReturnType();
                     } else ErrorChecker.addError(new ArgsMismatch(methodCall));
+                    return methodItem.getReturnType();
                 } catch (ItemNotFoundException e) { ErrorChecker.addError(new UndefinedMethod(methodCall)); }
             } else ErrorChecker.addError(new UndefinedClass(instance.getLine(), className));
         } else ErrorChecker.addError(new classExpected(methodCall));
