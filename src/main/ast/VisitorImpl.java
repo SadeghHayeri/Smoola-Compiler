@@ -401,7 +401,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                instance.setClassRef(EXP.getCurrentClassDeclaration(classesDeclaration, classesSymbolTable));
                 break;
             case PASS3:
                 break;
