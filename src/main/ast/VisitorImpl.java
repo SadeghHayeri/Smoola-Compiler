@@ -33,6 +33,8 @@ import symbolTable.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static ast.TCH.*;
+
 public class VisitorImpl implements Visitor {
 
     private enum Passes {
@@ -162,11 +164,10 @@ public class VisitorImpl implements Visitor {
                     Type returnType = methodDeclaration.getReturnType();
 
                     // set classDeclaration
-                    if(returnType instanceof UserDefinedType) {
-                        UserDefinedType userDefinedType = (UserDefinedType)returnType;
-                        String className = userDefinedType.getName().getName();
+                    if(isUserDefined(returnType)) {
+                        String className = UD(returnType).getName().getName();
                         if(classesDeclaration.containsKey(className))
-                            userDefinedType.setClassDeclaration(classesDeclaration.get(className));
+                            UD(returnType).setClassDeclaration(classesDeclaration.get(className));
                         else
                             ErrorChecker.addError(new UndefinedClass(methodDeclaration.getLine(), className));
                     }
@@ -205,25 +206,10 @@ public class VisitorImpl implements Visitor {
             // check return type
             Type returnType = methodDeclaration.getReturnType();
             Type returnValueType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, methodDeclaration.getReturnValue());
-            if(!(returnValueType instanceof NoType)) {
-                boolean twoSideUserDefinedType = returnType instanceof UserDefinedType && returnValueType instanceof UserDefinedType;
-                boolean argMismatchType =
-                        returnType instanceof IntType && !(returnValueType instanceof IntType)
-                                || returnType instanceof BooleanType && !(returnValueType instanceof BooleanType)
-                                || returnType instanceof StringType && !(returnValueType instanceof StringType)
-                                || returnType instanceof ArrayType && !(returnValueType instanceof ArrayType)
-                                || returnType instanceof UserDefinedType && !(returnValueType instanceof UserDefinedType);
-
-                if (argMismatchType) {
+            if(!isNoType(returnValueType))
+                if(!ErrorChecker.canAssign(classesDeclaration, classesSymbolTable, returnType, returnValueType))
                     ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
-                } else if (twoSideUserDefinedType) {
-                    String methodArgClassName = ((UserDefinedType) returnType).getName().getName();
-                    String calledArgClassName = ((UserDefinedType) returnValueType).getName().getName();
-                    if (!ErrorChecker.isSubType(classesDeclaration, methodArgClassName, calledArgClassName)) {
-                        ErrorChecker.addError(new BadReturnType(returnType, methodDeclaration.getReturnValue()));
-                    }
-                }
-            }
+
             SymbolTable.pop();
         }
     }
@@ -363,7 +349,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Expression exp = newArray.getExpression();
-                if(exp instanceof IntValue) {
+                if(ErrorChecker.isIntValue(exp)) {
                     int value = ((IntValue)exp).getConstant();
                     if(value == 0)
                         ErrorChecker.addError(new BadArraySize(newArray));
@@ -511,7 +497,7 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                if(!(assign.getlValue() instanceof Identifier || assign.getlValue() instanceof ArrayCall))
+                if(!ErrorChecker.isLeftValue(assign.getlValue()))
                     ErrorChecker.addError(new BadLeftValue(assign.getlValue()));
                 break;
             case PASS3:
@@ -554,8 +540,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
-                boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
-                if(!validConditionType)
+                if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
                 break;
             case PASS3:
@@ -580,8 +565,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Type conditionType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, loop.getCondition());
-                boolean validConditionType = conditionType instanceof BooleanType || conditionType instanceof NoType;
-                if(!validConditionType)
+                if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(loop.getCondition()));
                 break;
             case PASS3:
@@ -604,11 +588,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Type insideType = ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, write.getArg());
-                boolean validInsideType =
-                           insideType instanceof IntType
-                        || insideType instanceof StringType
-                        || insideType instanceof ArrayType
-                        || insideType instanceof NoType;
+                boolean validInsideType = isInt(insideType) || isString(insideType) || isArray(insideType) || isNoType(insideType);
                 if(!validInsideType)
                     ErrorChecker.addError(new BadWritelnType(write));
                 break;
@@ -630,11 +610,13 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
                 if(!semiStatement.isEmpty()) {
-                    Expression expression = semiStatement.getInside();
-                    if (expression instanceof BinaryExpression) {
-                        BinaryExpression binaryExpression = (BinaryExpression) semiStatement.getInside();
+                    // type check inside exp
+                    ErrorChecker.getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
+
+                    // convert to AssignStatement
+                    if (ErrorChecker.isBinaryExpression(semiStatement.getInside())) {
+                        BinaryExpression binaryExpression = ErrorChecker.BE(semiStatement.getInside());
                         if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
                             Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
                             assign.accept(this);
