@@ -35,7 +35,6 @@ public class VisitorImpl implements Visitor {
         FIND_CLASSES,
         FIND_METHODS,
         FILL_SYMBOL_TABLE,
-        PASS3,
         PRE_ORDER_PRINT
     }
 
@@ -60,9 +59,6 @@ public class VisitorImpl implements Visitor {
         if(!ErrorChecker.hasCriticalError()) {
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
             program.accept(this);
-
-            this.currentPass = Passes.PASS3;
-            program.accept(this);
         }
 
         if(ErrorChecker.hasError()) {
@@ -81,8 +77,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(program.toString());
@@ -129,8 +123,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 SymbolTable.top = classesSymbolTable.get(className);
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(classDeclaration.toString());
@@ -180,8 +172,6 @@ public class VisitorImpl implements Visitor {
             case FILL_SYMBOL_TABLE:
                 SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(methodDeclaration.toString());
                 break;
@@ -225,8 +215,6 @@ public class VisitorImpl implements Visitor {
                     ErrorChecker.addError(new VariableRedefinition(varDeclaration));
                 }
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(varDeclaration.toString());
                 break;
@@ -243,8 +231,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(arrayCall.toString());
@@ -264,8 +250,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(binaryExpression.toString());
                 break;
@@ -284,8 +268,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(identifier.toString());
                 break;
@@ -300,8 +282,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(length.toString());
@@ -319,9 +299,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
-
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(methodCall.toString());
@@ -348,23 +325,6 @@ public class VisitorImpl implements Visitor {
                     if(value == 0)
                         ErrorChecker.addError(new BadArraySize(newArray));
                 }
-
-                //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
-                boolean isUnary = exp instanceof UnaryExpression;
-                if(isUnary) {
-                    UnaryExpression unaryExp = (UnaryExpression)exp;
-                    if(unaryExp.getUnaryOperator() == UnaryOperator.minus) {
-                        Expression innerExp = unaryExp.getValue();
-                        if(innerExp instanceof IntValue) {
-                            int value = ((IntValue)innerExp).getConstant();
-                            if(value >= 0)
-                                ErrorChecker.addError(new BadArraySize(newArray));
-                        }
-                    }
-                }
-                /////////////////////////////////////////////////////////////////////////////////
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(newArray.toString());
@@ -383,8 +343,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(newClass.toString());
                 break;
@@ -402,8 +360,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(instance.toString());
                 break;
@@ -418,8 +374,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(unaryExpression.toString());
@@ -438,8 +392,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
                 break;
@@ -455,8 +407,6 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
                 break;
@@ -471,8 +421,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
@@ -491,8 +439,6 @@ public class VisitorImpl implements Visitor {
                 if(!isLeftValue(assign.getlValue()))
                     ErrorChecker.addError(new BadLeftValue(assign.getlValue()));
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(assign.toString());
                 break;
@@ -510,8 +456,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(block.toString());
@@ -533,8 +477,6 @@ public class VisitorImpl implements Visitor {
                 Type conditionType = getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(conditional.toString());
@@ -559,8 +501,6 @@ public class VisitorImpl implements Visitor {
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(loop.getCondition()));
                 break;
-            case PASS3:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(loop.toString());
                 break;
@@ -582,8 +522,6 @@ public class VisitorImpl implements Visitor {
                 boolean validInsideType = isInt(insideType) || isString(insideType) || isArray(insideType) || isNoType(insideType);
                 if(!validInsideType)
                     ErrorChecker.addError(new BadWritelnType(write));
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(write.toString());
@@ -616,8 +554,6 @@ public class VisitorImpl implements Visitor {
                     }
                 }
                 ErrorChecker.addError(new NotAStatement(semiStatement));
-                break;
-            case PASS3:
                 break;
             case PRE_ORDER_PRINT:
 //                Util.info();(semiStatement.toString());
