@@ -212,6 +212,8 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(VarDeclaration varDeclaration) {
+        String varName = varDeclaration.getIdentifier().getName();
+        Type varType = varDeclaration.getType();
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
@@ -219,12 +221,16 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 try {
-                    String varName = varDeclaration.getIdentifier().getName();
-                    Type varType = varDeclaration.getType();
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
                     SymbolTable.top.put(variable);
                 } catch (ItemAlreadyExistsException e) {
                     ErrorChecker.addError(new VariableRedefinition(varDeclaration));
+                } finally {
+                    if(isUserDefined(varType)) {
+                        String className = UD(varType).getName().getName();
+                        if(!classesDeclaration.containsKey(className))
+                            ErrorChecker.addError(new UndefinedClass(varDeclaration.getLine(), className));
+                    }
                 }
                 break;
             case PRE_ORDER_PRINT:
