@@ -118,7 +118,7 @@ public class ErrorChecker {
                         if(i != 0)
                             errors.add(new BadMainPlacement(mainClass));
 
-                        if(mainClass.getParentName() != null)
+                        if(!mainClass.getParentName().getName().equals(Util.MASTER_OBJECT_NAME))
                             errors.add(new BadMainParent(mainClass));
 
                         boolean hasTooManyMethods = mainClass.getMethodDeclarations().size() != 1;

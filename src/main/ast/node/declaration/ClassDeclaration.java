@@ -1,5 +1,6 @@
 package ast.node.declaration;
 
+import ast.Util;
 import ast.Visitor;
 import ast.node.expression.Identifier;
 
@@ -7,7 +8,7 @@ import java.util.ArrayList;
 
 public class ClassDeclaration extends Declaration {
     private Identifier name;
-    private Identifier parentName = null;
+    private Identifier parentName = new Identifier(-1, Util.MASTER_OBJECT_NAME);
     private ArrayList<VarDeclaration> varDeclarations = new ArrayList<>();
     private ArrayList<MethodDeclaration> methodDeclarations = new ArrayList<>();
 
@@ -35,6 +36,8 @@ public class ClassDeclaration extends Declaration {
     public void setParentName(Identifier parentName) {
         this.parentName = parentName;
     }
+    public void unSetParentName() { this.parentName = null; }
+
 
     public ArrayList<VarDeclaration> getVarDeclarations() {
         return varDeclarations;

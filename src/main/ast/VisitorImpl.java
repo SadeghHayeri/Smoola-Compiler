@@ -42,8 +42,17 @@ public class VisitorImpl implements Visitor {
     private HashMap<String, ClassDeclaration> classesDeclaration;
     private Passes currentPass;
 
+    private void addObjectClass(Program program) {
+        Identifier objectName = new Identifier(-1, Util.MASTER_OBJECT_NAME);
+        ClassDeclaration objectClass = new ClassDeclaration(-1, objectName);
+        objectClass.unSetParentName();
+        program.addClass(objectClass);
+    }
+
     @Override
     public void init(Program program) {
+        addObjectClass(program);
+
         currentPass = Passes.FIND_CLASSES;
         classesDeclaration = new HashMap<>();
         program.accept(this);
