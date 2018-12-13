@@ -1,45 +1,24 @@
 package ast;
 
-import ast.Type.ArrayType.ArrayType;
-import ast.Type.NoType;
-import ast.Type.PrimitiveType.BooleanType;
 import ast.Type.PrimitiveType.IntType;
-import ast.Type.PrimitiveType.StringType;
-import ast.Type.Type;
-import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
 import ast.node.declaration.MethodDeclaration;
-import ast.node.expression.*;
-import ast.node.expression.Value.BooleanValue;
-import ast.node.expression.Value.IntValue;
-import ast.node.expression.Value.StringValue;
 import errors.Error;
 import errors.ErrorPhase;
 import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
-import errors.classError.UndefinedClass;
-import errors.classError.mainClassError.*;
-import errors.expressionError.ArrayExpected;
-import errors.expressionError.BadIndexType;
-import errors.expressionError.UnsupportedOperand;
-import errors.methodError.ArgsMismatch;
-import errors.methodError.UndefinedMethod;
-import errors.methodError.classExpected;
+import errors.classError.mainClassError.BadMainParent;
+import errors.classError.mainClassError.MainMethodNotFound;
+import errors.classError.mainClassError.TooManyMethods;
+import errors.classError.mainClassError.VarDeclareInMainClass;
 import errors.methodError.mainMethodError.BadMainArgs;
 import errors.methodError.mainMethodError.BadMainReturnType;
 import errors.methodError.mainMethodError.VarDeclareInnMainMethod;
-import errors.statementError.BadLeftValue;
-import errors.variableError.UndefinedVariable;
-import symbolTable.ItemNotFoundException;
-import symbolTable.SymbolTable;
-import symbolTable.SymbolTableMethodItem;
-import symbolTable.SymbolTableVariableItem;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 
 public class ErrorChecker {
     public static ArrayList<Error> errors = new ArrayList<>();
@@ -60,7 +39,7 @@ public class ErrorChecker {
         return errors;
     }
 
-    public static void addError(Error error) {
+    static void addError(Error error) {
         errors.add(error);
     }
 
@@ -110,50 +89,29 @@ public class ErrorChecker {
         return null;
     }
 
-    static void checkMainClassErrors(Program program) {
-        boolean mainClassSeen = false;
-        List<ClassDeclaration> classes = program.getClasses();
-        if(!classes.isEmpty()) {
-            for (int i = 0; i < classes.size(); i++) {
-                boolean isMainClass = getMainMethod(classes.get(i)) != null;
-                if(isMainClass) {
-                    ClassDeclaration mainClass = classes.get(i);
-                    MethodDeclaration mainMethod = getMainMethod(mainClass);
+    static void checkMainClassErrors(ClassDeclaration mainClass) {
+        MethodDeclaration mainMethod = getMainMethod(mainClass);
 
-                    if(mainClassSeen) {
-                        errors.add(new MainRedefinition(mainClass));
-                    } else {
-                        if(i != 0)
-                            errors.add(new BadMainPlacement(mainClass));
+        boolean hasParent = !mainClass.getParentName().getName().equals(Util.MASTER_OBJECT_NAME);
+        if(hasParent) errors.add(new BadMainParent(mainClass));
 
-                        if(!mainClass.getParentName().getName().equals(Util.MASTER_OBJECT_NAME))
-                            errors.add(new BadMainParent(mainClass));
+        boolean isVarDeclareInMainClass = !mainClass.getVarDeclarations().isEmpty();
+        if(isVarDeclareInMainClass) errors.add(new VarDeclareInMainClass(mainClass));
 
-                        boolean hasTooManyMethods = mainClass.getMethodDeclarations().size() != 1;
-                        if(hasTooManyMethods)
-                            errors.add(new TooManyMethods(mainClass));
+        boolean hasTooManyMethods = mainClass.getMethodDeclarations().size() != 1;
+        if(hasTooManyMethods) errors.add(new TooManyMethods(mainClass));
 
-                        boolean badMainMethodArgs = !mainMethod.getArgs().isEmpty();
-                        if(badMainMethodArgs)
-                            errors.add(new BadMainArgs(mainMethod));
+        if(mainMethod != null) {
+            boolean badMainMethodArgs = !mainMethod.getArgs().isEmpty();
+            if (badMainMethodArgs) errors.add(new BadMainArgs(mainMethod));
 
-                        boolean badMainReturnType = !(mainMethod.getReturnType() instanceof IntType);
-                        if(badMainReturnType)
-                            errors.add(new BadMainReturnType(mainMethod));
+            boolean badMainReturnType = !(mainMethod.getReturnType() instanceof IntType);
+            if (badMainReturnType) errors.add(new BadMainReturnType(mainMethod));
 
-                        boolean isVarDeclareInMainClass = !mainClass.getVarDeclarations().isEmpty();
-                        if(isVarDeclareInMainClass)
-                            errors.add(new VarDeclareInMainClass(mainClass));
-
-                        boolean isVarDeclareInMainMethod = !mainMethod.getLocalVars().isEmpty();
-                        if(isVarDeclareInMainMethod)
-                            errors.add(new VarDeclareInnMainMethod(mainMethod));
-                    }
-                    mainClassSeen = true;
-                }
-            }
-            if(!mainClassSeen)
-                errors.add(new MainNotFound());
+            boolean isVarDeclareInMainMethod = !mainMethod.getLocalVars().isEmpty();
+            if (isVarDeclareInMainMethod) errors.add(new VarDeclareInnMainMethod(mainMethod));
+        } else {
+            errors.add(new MainMethodNotFound(mainClass));
         }
     }
 

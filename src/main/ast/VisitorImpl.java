@@ -52,38 +52,45 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void init(Program program) {
-        addObjectClass(program);
+        do {
+            addObjectClass(program);
 
-        currentPass = Passes.FIND_CLASSES;
-        classesDeclaration = new HashMap<>();
-        program.accept(this);
+            currentPass = Passes.FIND_CLASSES;
+            classesDeclaration = new HashMap<>();
+            program.accept(this);
+            if(ErrorChecker.hasCriticalError()) break;
 
-        currentPass = Passes.FIND_METHODS;
-        classesSymbolTable = new HashMap<>();
-        program.accept(this);
+            currentPass = Passes.FIND_METHODS;
+            classesSymbolTable = new HashMap<>();
+            program.accept(this);
+            if(ErrorChecker.hasCriticalError()) break;
 
-        ErrorChecker.checkHasAnyClass(program);
-        ErrorChecker.checkCircularInheritance(classesDeclaration);
-        ErrorChecker.checkMainClassErrors(program);
+            ErrorChecker.checkHasAnyClass(program);
+            if(ErrorChecker.hasCriticalError()) break;
 
-        if(!ErrorChecker.hasCriticalError()) {
+            ErrorChecker.checkCircularInheritance(classesDeclaration);
+            if(ErrorChecker.hasCriticalError()) break;
+
+            ClassDeclaration mainClass = program.getClasses().get(0);
+            ErrorChecker.checkMainClassErrors(mainClass);
+            if(ErrorChecker.hasCriticalError()) break;
+
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
             program.accept(this);
-        }
+            if(ErrorChecker.hasCriticalError()) break;
 
-        if(ErrorChecker.hasError()) {
-            boolean havePhase2Error = !ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2).isEmpty();
-            if(havePhase2Error) {
-                for(Error error : ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2))
-                    Util.error(error.toString());
-            } else {
-                for(Error error : ErrorChecker.getErrors())
-                    Util.error(error.toString());
-            }
-        } else {
-//            this.currentPass = Passes.PRE_ORDER_PRINT;
-//            program.accept(this);
-        }
+        } while (false);
+
+        ArrayList<Error> phase2Errors = ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2);
+        if(!phase2Errors.isEmpty())
+            for(Error error : phase2Errors)
+                Util.error(error.toString());
+        else
+            for(Error error : ErrorChecker.getErrors())
+                Util.error(error.toString());
+
+//        this.currentPass = Passes.PRE_ORDER_PRINT;
+//        program.accept(this);
     }
 
     public void visit(Program program) {
