@@ -27,6 +27,7 @@ import errors.methodError.UndefinedMethod;
 import errors.methodError.classExpected;
 import errors.methodError.mainMethodError.BadMainArgs;
 import errors.methodError.mainMethodError.BadMainReturnType;
+import errors.methodError.mainMethodError.VarDeclareInnMainMethod;
 import errors.statementError.BadLeftValue;
 import errors.variableError.UndefinedVariable;
 import symbolTable.ItemNotFoundException;
@@ -132,6 +133,14 @@ public class ErrorChecker {
                         boolean badMainReturnType = !(mainMethod.getReturnType() instanceof IntType);
                         if(badMainReturnType)
                             errors.add(new BadMainReturnType(mainMethod));
+
+                        boolean isVarDeclareInMainClass = !mainClass.getVarDeclarations().isEmpty();
+                        if(isVarDeclareInMainClass)
+                            errors.add(new VarDeclareInMainClass(mainClass));
+
+                        boolean isVarDeclareInMainMethod = !mainMethod.getLocalVars().isEmpty();
+                        if(isVarDeclareInMainMethod)
+                            errors.add(new VarDeclareInnMainMethod(mainMethod));
                     }
                     mainClassSeen = true;
                 }
