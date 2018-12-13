@@ -185,6 +185,12 @@ public class ExpressionChecker {
         return new NoType();
     }
 
+    public static boolean isAssignExp(Expression exp) {
+        if (isBinaryExpression(exp))
+            return BE(exp).getBinaryOperator() == BinaryOperator.assign;
+        return false;
+    }
+
     private static Type getBinaryExpressionType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, BinaryExpression binaryExpression) {
         Type leftType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getLeft());
         Type rightType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getRight());

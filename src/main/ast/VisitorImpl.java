@@ -149,6 +149,7 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
+        boolean isMainMethod = methodDeclaration.getName().getName().equals("main");
         switch (currentPass) {
             case FIND_CLASSES:
                 break;
@@ -191,8 +192,10 @@ public class VisitorImpl implements Visitor {
             varDeclaration.accept(this);
         for(VarDeclaration varDeclaration : methodDeclaration.getLocalVars())
             varDeclaration.accept(this);
-        for(Statement statement : methodDeclaration.getBody())
+        for(Statement statement : methodDeclaration.getBody()) {
+            statement.setInMainMethod(isMainMethod);
             statement.accept(this);
+        }
         methodDeclaration.getReturnValue().accept(this);
 
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
@@ -549,18 +552,21 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 if(!semiStatement.isEmpty()) {
+                    Expression insideExp = semiStatement.getInside();
+
                     // type check inside exp
-                    getExpType(classesDeclaration, classesSymbolTable, semiStatement.getInside());
+                    getExpType(classesDeclaration, classesSymbolTable, insideExp);
 
                     // convert to AssignStatement
-                    if (isBinaryExpression(semiStatement.getInside())) {
-                        BinaryExpression binaryExpression = BE(semiStatement.getInside());
-                        if (binaryExpression.getBinaryOperator() == BinaryOperator.assign) {
-                            Assign assign = new Assign(semiStatement.getLine(), binaryExpression.getLeft(), binaryExpression.getRight());
-                            assign.accept(this);
-                            return;
-                        }
+                    if(isAssignExp(insideExp)) {
+                        Assign assign = new Assign(semiStatement.getLine(), BE(insideExp).getLeft(), BE(insideExp).getRight());
+                        assign.accept(this);
+                        return;
                     }
+
+                    // is in main class
+                    if(semiStatement.isInMainMethod())
+                        return;
                 }
                 ErrorChecker.addError(new NotAStatement(semiStatement));
                 break;
