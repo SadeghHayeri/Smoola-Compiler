@@ -9,7 +9,7 @@ import ast.Type.Type;
 import ast.Type.UserDefinedType.UserDefinedType;
 import ast.node.expression.Expression;
 
-public class TCH {
+public class TypeChecker {
     static BooleanType BOOL(Type type)      { return (BooleanType) type; }
     static IntType INT(Type type)           { return (IntType) type; }
     static StringType STR(Type type)        { return (StringType) type; }

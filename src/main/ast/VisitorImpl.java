@@ -26,8 +26,8 @@ import symbolTable.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static ast.EXP.*;
-import static ast.TCH.*;
+import static ast.ExpressionChecker.*;
+import static ast.TypeChecker.*;
 
 public class VisitorImpl implements Visitor {
 

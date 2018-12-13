@@ -1,6 +1,5 @@
 package ast;
 
-import ast.ErrorChecker;
 import ast.Type.ArrayType.ArrayType;
 import ast.Type.NoType;
 import ast.Type.PrimitiveType.BooleanType;
@@ -31,9 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static ast.ErrorChecker.isSubType;
-import static ast.TCH.*;
+import static ast.TypeChecker.*;
 
-public class EXP {
+public class ExpressionChecker {
     static enum EXP_TYPE {
         BOOLEAN     ("BOOLEAN"),
         INT         ("INT"),
@@ -132,7 +131,7 @@ public class EXP {
             case IDENTIFIER:
                 return getIdentifierType(ID(exp));
             case THIS:
-                THIS(exp).setClassRef(EXP.getCurrentClassDeclaration(classesDeclaration, classesSymbolTable));
+                THIS(exp).setClassRef(ExpressionChecker.getCurrentClassDeclaration(classesDeclaration, classesSymbolTable));
                 String refName = THIS(exp).getClassRef().getName().getName();
                 return new UserDefinedType(new Identifier(exp.getLine(), refName));
             case NEW_CLASS:
