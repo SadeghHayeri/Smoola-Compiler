@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class Util {
 
-    public static final boolean colorful = true;
+    public static final boolean colorful = false;
     public static final String MASTER_OBJECT_NAME = "Object";
 
     public static final String ANSI_RESET = "\u001B[0m";

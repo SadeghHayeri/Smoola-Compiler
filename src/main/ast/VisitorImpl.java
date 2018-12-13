@@ -1,5 +1,6 @@
 package ast;
 
+import ast.Type.PrimitiveType.StringType;
 import ast.Type.Type;
 import ast.node.Program;
 import ast.node.declaration.ClassDeclaration;
@@ -46,8 +47,21 @@ public class VisitorImpl implements Visitor {
     private void addObjectClass(Program program) {
         Identifier objectName = new Identifier(-1, Util.MASTER_OBJECT_NAME);
         ClassDeclaration objectClass = new ClassDeclaration(-1, objectName);
+
+        Identifier toStringName = new Identifier(-1, "toString");
+        MethodDeclaration toStringMethod = new MethodDeclaration(-1, toStringName);
+        toStringMethod.setReturnType(new StringType());
+
+        Expression returnValue = new StringValue(-1, "Object");
+        toStringMethod.setReturnValue(returnValue);
+
         objectClass.unSetParentName();
         program.addClass(objectClass);
+    }
+
+    private boolean isMainClass(ClassDeclaration classDeclaration) {
+        if(classesDeclaration.size() == 0) return false;
+        return classesDeclaration.get(0) == classDeclaration;
     }
 
     @Override
@@ -129,6 +143,8 @@ public class VisitorImpl implements Visitor {
                 case FIND_METHODS:
                     boolean hasSymbolTable = classesSymbolTable.containsKey(className);
                     if(hasSymbolTable) return;
+
+                    // set parent symbol-table -DFS-
                     SymbolTable parentSymbolTable = null;
                     if(classDeclaration.hasParent()) {
                         String parentName = classDeclaration.getParentName().getName();
@@ -140,6 +156,7 @@ public class VisitorImpl implements Visitor {
                             ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
                         }
                     }
+
                     SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
                     classesSymbolTable.put(className, symbolTable);
                     SymbolTable.top = symbolTable;
@@ -157,13 +174,15 @@ public class VisitorImpl implements Visitor {
             classDeclaration.getParentName().accept(this);
         for(VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
             varDeclaration.accept(this);
-        for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations())
+        for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
+            methodDeclaration.setInMainClass(isMainClass(classDeclaration));
             methodDeclaration.accept(this);
+        }
     }
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
-        boolean isMainMethod = methodDeclaration.getName().getName().equals("main");
+        boolean isMainMethod = methodDeclaration.isMainMethod();
         switch (currentPass) {
             case FIND_CLASSES:
                 break;

@@ -16,6 +16,16 @@ public class MethodDeclaration extends Declaration {
     private ArrayList<VarDeclaration> localVars = new ArrayList<>();
     private ArrayList<Statement> body = new ArrayList<>();
 
+    public boolean isMainMethod() {
+        return isInMainClass && name.getName().equals("main");
+    }
+
+    public void setInMainClass(boolean inMainClass) {
+        isInMainClass = inMainClass;
+    }
+
+    boolean isInMainClass = false;
+
     public MethodDeclaration(int line, Identifier name) {
         super(line);
         this.name = name;
