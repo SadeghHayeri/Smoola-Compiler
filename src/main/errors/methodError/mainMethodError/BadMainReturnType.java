@@ -1,6 +1,7 @@
 package errors.methodError.mainMethodError;
 
 import ast.node.declaration.MethodDeclaration;
+import errors.ErrorPhase;
 
 public class BadMainReturnType extends MainMethodError {
 
@@ -11,5 +12,10 @@ public class BadMainReturnType extends MainMethodError {
     @Override
     public String toString() {
         return String.format("Line:%d:Main method return type must be INT", line);
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE3;
     }
 }

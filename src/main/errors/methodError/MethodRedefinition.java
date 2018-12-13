@@ -1,6 +1,7 @@
 package errors.methodError;
 
 import ast.node.declaration.MethodDeclaration;
+import errors.ErrorPhase;
 import errors.variableError.VariableError;
 
 public class MethodRedefinition extends MethodError {
@@ -14,5 +15,10 @@ public class MethodRedefinition extends MethodError {
     @Override
     public String toString() {
         return String.format("Line:%d:Redefinition of method %s", line, methodName);
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE2;
     }
 }

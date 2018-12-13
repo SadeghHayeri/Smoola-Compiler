@@ -15,6 +15,7 @@ import ast.node.expression.Value.BooleanValue;
 import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import errors.Error;
+import errors.ErrorPhase;
 import errors.classError.CircularInheritance;
 import errors.classError.NoClassExist;
 import errors.classError.UndefinedClass;
@@ -42,10 +43,12 @@ import java.util.List;
 
 public class ErrorChecker {
     public static ArrayList<Error> errors = new ArrayList<>();
-    private static boolean hasCriticalError = false;
 
     static boolean hasCriticalError() {
-        return hasCriticalError;
+        for(Error error : errors)
+            if(error.isCriticalError())
+                return true;
+        return false;
     }
 
     static boolean hasError() {
@@ -62,10 +65,16 @@ public class ErrorChecker {
     }
 
     static void checkHasAnyClass(Program program) {
-        if(program.getClasses().isEmpty()) {
+        if(program.getClasses().isEmpty())
             errors.add(new NoClassExist());
-            hasCriticalError = true;
-        }
+    }
+
+    static ArrayList<Error> getOnlyPhaseErrors(ErrorPhase phase) {
+        ArrayList<Error> phaseErrors = new ArrayList<>();
+        for(Error error : errors)
+            if(error.whichPhase() == phase)
+                phaseErrors.add(error);
+        return phaseErrors;
     }
 
     static private boolean hasCircularInheritance(HashMap<String, ClassDeclaration> classesDeclaration) {
@@ -89,10 +98,8 @@ public class ErrorChecker {
     }
 
     static void checkCircularInheritance(HashMap<String, ClassDeclaration> classesDeclaration) {
-        if(hasCircularInheritance(classesDeclaration)) {
+        if(hasCircularInheritance(classesDeclaration))
             errors.add(new CircularInheritance());
-            hasCriticalError = true;
-        }
     }
 
     static private MethodDeclaration getMainMethod(ClassDeclaration classDeclaration) {

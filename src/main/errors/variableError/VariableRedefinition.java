@@ -1,6 +1,7 @@
 package errors.variableError;
 
 import ast.node.declaration.VarDeclaration;
+import errors.ErrorPhase;
 
 public class VariableRedefinition extends VariableError {
 
@@ -13,5 +14,10 @@ public class VariableRedefinition extends VariableError {
     @Override
     public String toString() {
         return String.format("Line:%d:Redefinition of variable %s", line, variableName);
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE2;
     }
 }

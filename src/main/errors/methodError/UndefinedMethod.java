@@ -2,6 +2,7 @@ package errors.methodError;
 
 import ast.node.expression.Expression;
 import ast.node.expression.MethodCall;
+import errors.ErrorPhase;
 
 public class UndefinedMethod extends MethodError {
 
@@ -18,5 +19,10 @@ public class UndefinedMethod extends MethodError {
     @Override
     public String toString() {
         return String.format("Line:%d:there is no method named %s in class %s", line, methodName, className);
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE3;
     }
 }

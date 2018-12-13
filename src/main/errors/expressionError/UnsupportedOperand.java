@@ -1,6 +1,7 @@
 package errors.expressionError;
 
 import ast.node.expression.*;
+import errors.ErrorPhase;
 
 public class UnsupportedOperand extends ExpressionError {
 
@@ -18,5 +19,10 @@ public class UnsupportedOperand extends ExpressionError {
     @Override
     public String toString() {
         return String.format("Line:%d:unsupported operand type for %s", line, operator.toString());
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE3;
     }
 }

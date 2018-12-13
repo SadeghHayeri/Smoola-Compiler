@@ -1,6 +1,6 @@
 package errors;
 
-public class Error extends Throwable {
+public abstract class Error extends Throwable {
     protected int line;
 
     public Error(int line) {
@@ -14,4 +14,7 @@ public class Error extends Throwable {
     public String toString() {
         return "";
     }
+
+    public abstract ErrorPhase whichPhase();
+    public boolean isCriticalError() { return false; }
 }

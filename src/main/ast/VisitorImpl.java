@@ -11,6 +11,7 @@ import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
+import errors.ErrorPhase;
 import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
 import errors.expressionError.BadConditionType;
@@ -62,8 +63,8 @@ public class VisitorImpl implements Visitor {
         program.accept(this);
 
         ErrorChecker.checkHasAnyClass(program);
-        ErrorChecker.checkMainClassErrors(program);
         ErrorChecker.checkCircularInheritance(classesDeclaration);
+        ErrorChecker.checkMainClassErrors(program);
 
         if(!ErrorChecker.hasCriticalError()) {
             this.currentPass = Passes.FILL_SYMBOL_TABLE;
@@ -71,11 +72,17 @@ public class VisitorImpl implements Visitor {
         }
 
         if(ErrorChecker.hasError()) {
-            for(Error error : ErrorChecker.getErrors())
-                Util.error(error.toString());
+            boolean havePhase2Error = !ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2).isEmpty();
+            if(havePhase2Error) {
+                for(Error error : ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2))
+                    Util.error(error.toString());
+            } else {
+                for(Error error : ErrorChecker.getErrors())
+                    Util.error(error.toString());
+            }
         } else {
-            this.currentPass = Passes.PRE_ORDER_PRINT;
-            program.accept(this);
+//            this.currentPass = Passes.PRE_ORDER_PRINT;
+//            program.accept(this);
         }
     }
 
@@ -343,6 +350,21 @@ public class VisitorImpl implements Visitor {
                     if(value == 0)
                         ErrorChecker.addError(new BadArraySize(newArray));
                 }
+
+                //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
+                boolean isUnary = exp instanceof UnaryExpression;
+                if(isUnary) {
+                    UnaryExpression unaryExp = (UnaryExpression)exp;
+                    if(unaryExp.getUnaryOperator() == UnaryOperator.minus) {
+                        Expression innerExp = unaryExp.getValue();
+                        if(innerExp instanceof IntValue) {
+                            int value = ((IntValue)innerExp).getConstant();
+                            if(value >= 0)
+                                ErrorChecker.addError(new BadArraySize(newArray));
+                        }
+                    }
+                }
+                /////////////////////////////////////////////////////////////////////////////////
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(newArray.toString());

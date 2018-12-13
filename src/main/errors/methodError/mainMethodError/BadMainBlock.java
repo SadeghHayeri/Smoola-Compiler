@@ -1,6 +1,7 @@
 package errors.methodError.mainMethodError;
 
 import ast.node.declaration.MethodDeclaration;
+import errors.ErrorPhase;
 
 public class BadMainBlock extends MainMethodError {
 
@@ -11,5 +12,10 @@ public class BadMainBlock extends MainMethodError {
     @Override
     public String toString() {
         return String.format("Line:%d:Main method has bad body", line);
+    }
+
+    @Override
+    public ErrorPhase whichPhase() {
+        return ErrorPhase.PHASE3;
     }
 }
