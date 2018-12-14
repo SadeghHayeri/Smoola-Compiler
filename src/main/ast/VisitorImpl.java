@@ -74,6 +74,9 @@ public class VisitorImpl implements Visitor {
             program.accept(this);
             if(ErrorChecker.hasCriticalError()) break;
 
+            ErrorChecker.checkCircularInheritance(classesDeclaration);
+            if(ErrorChecker.hasCriticalError()) break;
+
             currentPass = Passes.FIND_METHODS;
             classesSymbolTable = new HashMap<>();
             program.accept(this);
@@ -82,8 +85,8 @@ public class VisitorImpl implements Visitor {
             ErrorChecker.checkHasAnyClass(program);
             if(ErrorChecker.hasCriticalError()) break;
 
-            ErrorChecker.checkCircularInheritance(classesDeclaration);
-            if(ErrorChecker.hasCriticalError()) break;
+//            ErrorChecker.checkCircularInheritance(classesDeclaration);
+//            if(ErrorChecker.hasCriticalError()) break;
 
             ClassDeclaration mainClass = program.getClasses().get(0);
             ErrorChecker.checkMainClassErrors(mainClass);
@@ -129,7 +132,7 @@ public class VisitorImpl implements Visitor {
         String className = classDeclaration.getName().getName();
         switch (currentPass) {
             case FIND_CLASSES:
-                if(!classesDeclaration.containsKey(className)) {
+                if (!classesDeclaration.containsKey(className)) {
                     classesDeclaration.put(className, classDeclaration);
                 } else {
                     ErrorChecker.addError(new ClassRedefinition(classDeclaration));
@@ -140,28 +143,29 @@ public class VisitorImpl implements Visitor {
                 }
                 return;
 //                break;
-                case FIND_METHODS:
-                    boolean hasSymbolTable = classesSymbolTable.containsKey(className);
-                    if(hasSymbolTable) return;
+            case FIND_METHODS:
+                boolean hasSymbolTable = classesSymbolTable.containsKey(className);
+                if (hasSymbolTable) return;
 
-                    // set parent symbol-table -DFS-
-                    SymbolTable parentSymbolTable = null;
-                    if(classDeclaration.hasParent()) {
-                        String parentName = classDeclaration.getParentName().getName();
-                        if(classesDeclaration.containsKey(parentName)) {
-                            ClassDeclaration parent = classesDeclaration.get(parentName);
-                            parent.accept(this);
-                            parentSymbolTable = classesSymbolTable.get(parentName);
-                        } else {
-                            ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
-                        }
+                // set parent symbol-table -DFS tor-
+                SymbolTable parentSymbolTable = null;
+                if (classDeclaration.hasParent()) {
+                    String parentName = classDeclaration.getParentName().getName();
+                    if (classesDeclaration.containsKey(parentName)) {
+                        ClassDeclaration parent = classesDeclaration.get(parentName);
+                        parent.accept(this);
+                        parentSymbolTable = classesSymbolTable.get(parentName);
+                    } else {
+                        ErrorChecker.addError(new UndefinedClass(classDeclaration.getLine(), parentName));
                     }
+                }
 
-                    SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
-                    classesSymbolTable.put(className, symbolTable);
-                    SymbolTable.top = symbolTable;
+                SymbolTable symbolTable = new SymbolTable(parentSymbolTable, true);
+                classesSymbolTable.put(className, symbolTable);
+                SymbolTable.top = symbolTable;
                 break;
             case FILL_SYMBOL_TABLE:
+
                 SymbolTable.top = classesSymbolTable.get(className);
                 break;
             case PRE_ORDER_PRINT:
@@ -170,13 +174,16 @@ public class VisitorImpl implements Visitor {
         }
 
         classDeclaration.getName().accept(this);
-        if(classDeclaration.hasParent())
+        if (classDeclaration.hasParent())
             classDeclaration.getParentName().accept(this);
-        for(VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
-            varDeclaration.accept(this);
-        for(MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
-            methodDeclaration.setInMainClass(isMainClass(classDeclaration));
-            methodDeclaration.accept(this);
+        if (currentPass == Passes.FIND_METHODS || currentPass == Passes.PRE_ORDER_PRINT) {
+            for (VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
+                varDeclaration.accept(this);
+            for (MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
+                methodDeclaration.setInMainClass(isMainClass(classDeclaration));
+                methodDeclaration.accept(this);
+
+            }
         }
     }
 
@@ -219,18 +226,18 @@ public class VisitorImpl implements Visitor {
                 Util.info(methodDeclaration.toString());
                 break;
         }
-
         methodDeclaration.getName().accept(this);
-        for(VarDeclaration varDeclaration : methodDeclaration.getArgs())
-            varDeclaration.accept(this);
-        for(VarDeclaration varDeclaration : methodDeclaration.getLocalVars())
-            varDeclaration.accept(this);
-        for(Statement statement : methodDeclaration.getBody()) {
-            statement.setInMainMethod(isMainMethod);
-            statement.accept(this);
+        if(currentPass == Passes.FILL_SYMBOL_TABLE || currentPass == Passes.PRE_ORDER_PRINT) {
+            for (VarDeclaration varDeclaration : methodDeclaration.getArgs())
+                varDeclaration.accept(this);
+            for (VarDeclaration varDeclaration : methodDeclaration.getLocalVars())
+                varDeclaration.accept(this);
+            for (Statement statement : methodDeclaration.getBody()) {
+                statement.setInMainMethod(isMainMethod);
+                statement.accept(this);
+            }
+            methodDeclaration.getReturnValue().accept(this);
         }
-        methodDeclaration.getReturnValue().accept(this);
-
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
             // check return type
             Type returnType = methodDeclaration.getReturnType();
@@ -251,6 +258,18 @@ public class VisitorImpl implements Visitor {
             case FIND_CLASSES:
                 break;
             case FIND_METHODS:
+                try {
+                    SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
+                    SymbolTable.top.put(variable);
+                } catch (ItemAlreadyExistsException e) {
+                    ErrorChecker.addError(new VariableRedefinition(varDeclaration));
+                } finally {
+                    if(isUserDefined(varType)) {
+                        String className = UD(varType).getName().getName();
+                        if(!classesDeclaration.containsKey(className))
+                            ErrorChecker.addError(new UndefinedClass(varDeclaration.getLine(), className));
+                    }
+                }
                 break;
             case FILL_SYMBOL_TABLE:
                 try {
@@ -265,6 +284,7 @@ public class VisitorImpl implements Visitor {
                             ErrorChecker.addError(new UndefinedClass(varDeclaration.getLine(), className));
                     }
                 }
+
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(varDeclaration.toString());
