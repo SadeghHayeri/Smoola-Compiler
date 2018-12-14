@@ -42,7 +42,7 @@ public class VisitorImpl implements Visitor {
 
     private HashMap<String, SymbolTable> classesSymbolTable;
     private HashMap<String, ClassDeclaration> classesDeclaration;
-    private ArrayList<ClassDeclaration> classesIndex;
+    private ClassDeclaration mainClassDeclaration = null;
     private Passes currentPass;
 
     private void addObjectClass(Program program) {
@@ -61,18 +61,23 @@ public class VisitorImpl implements Visitor {
     }
 
     private boolean isMainClass(ClassDeclaration classDeclaration) {
-        if(classesIndex.size() == 0) return false;
-        return classesIndex.get(0) == classDeclaration;
+        if(mainClassDeclaration == null) return false;
+        return mainClassDeclaration == classDeclaration;
+    }
+
+    private void setMainClassDeclaration(Program program) {
+        if(program.hasAnyClass())
+            mainClassDeclaration = program.getClasses().get(0);
     }
 
     @Override
     public void init(Program program) {
         do {
+            setMainClassDeclaration(program);
             addObjectClass(program);
 
             currentPass = Passes.FIND_CLASSES;
             classesDeclaration = new HashMap<>();
-            classesIndex = new ArrayList<>();
             program.accept(this);
             if(ErrorChecker.hasCriticalError()) break;
 
@@ -128,12 +133,12 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(ClassDeclaration classDeclaration) {
+        System.out.println(isMainClass(classDeclaration));
         String className = classDeclaration.getName().getName();
         switch (currentPass) {
             case FIND_CLASSES:
                 if (!classesDeclaration.containsKey(className)) {
                     classesDeclaration.put(className, classDeclaration);
-                    classesIndex.add(classDeclaration);
                 } else {
                     ErrorChecker.addError(new ClassRedefinition(classDeclaration));
                     String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();

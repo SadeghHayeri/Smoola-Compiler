@@ -44,7 +44,7 @@ public class ErrorChecker {
     }
 
     static void checkHasAnyClass(Program program) {
-        if(program.getClasses().isEmpty())
+        if(program.getClasses().size() < 2)
             errors.add(new NoClassExist());
     }
 
