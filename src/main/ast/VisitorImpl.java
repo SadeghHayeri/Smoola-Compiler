@@ -13,17 +13,19 @@ import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
 import errors.ErrorPhase;
-import errors.expressionError.BadArraySize;
 import errors.classError.ClassRedefinition;
+import errors.classError.UndefinedClass;
+import errors.expressionError.BadArraySize;
 import errors.expressionError.BadConditionType;
 import errors.expressionError.BadWritelnType;
 import errors.methodError.BadReturnType;
 import errors.methodError.MethodRedefinition;
-import errors.statementError.BadLeftValue;
-import errors.variableError.VariableRedefinition;
 import errors.statementError.NotAStatement;
-import errors.classError.UndefinedClass;
-import symbolTable.*;
+import errors.variableError.VariableRedefinition;
+import symbolTable.ItemAlreadyExistsException;
+import symbolTable.SymbolTable;
+import symbolTable.SymbolTableMethodItem;
+import symbolTable.SymbolTableVariableItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,12 +118,6 @@ public class VisitorImpl implements Visitor {
 
     public void visit(Program program) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(program.toString());
                 break;
@@ -133,7 +129,6 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(ClassDeclaration classDeclaration) {
-        System.out.println(isMainClass(classDeclaration));
         String className = classDeclaration.getName().getName();
         switch (currentPass) {
             case FIND_CLASSES:
@@ -263,19 +258,6 @@ public class VisitorImpl implements Visitor {
             case FIND_CLASSES:
                 break;
             case FIND_METHODS:
-                try {
-                    SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
-                    SymbolTable.top.put(variable);
-                } catch (ItemAlreadyExistsException e) {
-                    ErrorChecker.addError(new VariableRedefinition(varDeclaration));
-                } finally {
-                    if(isUserDefined(varType)) {
-                        String className = UD(varType).getName().getName();
-                        if(!classesDeclaration.containsKey(className))
-                            ErrorChecker.addError(new UndefinedClass(varDeclaration.getLine(), className));
-                    }
-                }
-                break;
             case FILL_SYMBOL_TABLE:
                 try {
                     SymbolTableVariableItem variable = new SymbolTableVariableItem(varName, varType);
@@ -289,7 +271,6 @@ public class VisitorImpl implements Visitor {
                             ErrorChecker.addError(new UndefinedClass(varDeclaration.getLine(), className));
                     }
                 }
-
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(varDeclaration.toString());
@@ -302,12 +283,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(ArrayCall arrayCall) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(arrayCall.toString());
                 break;
@@ -320,12 +295,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BinaryExpression binaryExpression) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(binaryExpression.toString());
                 break;
@@ -338,12 +307,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Identifier identifier) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(identifier.toString());
                 break;
@@ -353,12 +316,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Length length) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(length.toString());
                 break;
@@ -370,12 +327,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(MethodCall methodCall) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(methodCall.toString());
                 break;
@@ -428,12 +379,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(NewClass newClass) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(newClass.toString());
                 break;
@@ -445,12 +390,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(This instance) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(instance.toString());
                 break;
@@ -460,12 +399,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(UnaryExpression unaryExpression) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(unaryExpression.toString());
                 break;
@@ -477,12 +410,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(BooleanValue value) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
                 break;
@@ -492,12 +419,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(IntValue value) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
                 break;
@@ -507,12 +428,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(StringValue value) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(value.toString());
                 break;
@@ -522,12 +437,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Assign assign) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(assign.toString());
                 break;
@@ -540,12 +449,6 @@ public class VisitorImpl implements Visitor {
     @Override
     public void visit(Block block) {
         switch (currentPass) {
-            case FIND_CLASSES:
-                break;
-            case FIND_METHODS:
-                break;
-            case FILL_SYMBOL_TABLE:
-                break;
             case PRE_ORDER_PRINT:
                 Util.info(block.toString());
                 break;
