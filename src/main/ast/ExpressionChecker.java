@@ -167,10 +167,16 @@ public class ExpressionChecker {
                 UnaryOperator uop = UE(exp).getUnaryOperator();
                 switch (uop) {
                     case not:
-                        if(!isBooleanOrNoType(expType)) ErrorChecker.addError(new UnsupportedOperand(UE(exp)));
+                        if(!isBooleanOrNoType(expType)) {
+                            ErrorChecker.addError(new UnsupportedOperand(UE(exp)));
+                            return new NoType();
+                        }
                         return new BooleanType();
                     case minus:
-                        if(!isIntOrNoType(expType)) ErrorChecker.addError(new UnsupportedOperand(UE(exp)));
+                        if(!isIntOrNoType(expType)) {
+                            ErrorChecker.addError(new UnsupportedOperand(UE(exp)));
+                            return new NoType();
+                        }
                         return new IntType();
                 }
 
@@ -210,15 +216,30 @@ public class ExpressionChecker {
         boolean isAssign = operator == BinaryOperator.assign;
 
         if(isArithmeticOperator) {
-            if(!isIntOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
-            if(!isIntOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!isIntOrNoType(leftType)) {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
+            if(!isIntOrNoType(rightType)) {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
             return new IntType();
         } else if(isLogicalOperator) {
-            if(!isBooleanOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
-            if(!isBooleanOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!isBooleanOrNoType(leftType)) {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
+            if(!isBooleanOrNoType(rightType)) {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
             return new BooleanType();
         } else if(isEqOrNeq) {
-            if(!haveSameType(leftType, rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!haveSameType(leftType, rightType)) {
+                ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+                return new NoType();
+            }
             return new BooleanType();
         } else if(isAssign) {
             if(!isLeftValue(binaryExpression.getLeft())) ErrorChecker.addError(new BadLeftValue(binaryExpression));
@@ -260,7 +281,9 @@ public class ExpressionChecker {
                         return methodItem.getReturnType();
                     } else ErrorChecker.addError(new ArgsMismatch(methodCall));
                     return methodItem.getReturnType();
-                } catch (ItemNotFoundException e) { ErrorChecker.addError(new UndefinedMethod(methodCall)); }
+                } catch (ItemNotFoundException e) {
+                    String instanceName = ((UserDefinedType)getExpType(classesDeclaration, classesSymbolTable, methodCall.getInstance())).getName().getName();
+                    ErrorChecker.addError(new UndefinedMethod(methodCall, instanceName)); }
             } else ErrorChecker.addError(new UndefinedClass(instance.getLine(), className));
         } else ErrorChecker.addError(new classExpected(methodCall));
         return new NoType();

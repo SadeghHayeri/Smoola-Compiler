@@ -13,8 +13,7 @@ public class MethodRedefinition extends MethodError {
     }
 
     @Override
-    public String toString() {
-        return String.format("Line:%d:Redefinition of method %s", line, methodName);
+    public String toString() { return String.format("Line:%d:Redefinition of method %s", line, methodName);
     }
 
     @Override

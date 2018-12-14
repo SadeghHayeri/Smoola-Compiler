@@ -42,6 +42,7 @@ public class VisitorImpl implements Visitor {
 
     private HashMap<String, SymbolTable> classesSymbolTable;
     private HashMap<String, ClassDeclaration> classesDeclaration;
+    private ArrayList<ClassDeclaration> classesIndex;
     private Passes currentPass;
 
     private void addObjectClass(Program program) {
@@ -60,8 +61,8 @@ public class VisitorImpl implements Visitor {
     }
 
     private boolean isMainClass(ClassDeclaration classDeclaration) {
-        if(classesDeclaration.size() == 0) return false;
-        return classesDeclaration.get(0) == classDeclaration;
+        if(classesIndex.size() == 0) return false;
+        return classesIndex.get(0) == classDeclaration;
     }
 
     @Override
@@ -71,6 +72,7 @@ public class VisitorImpl implements Visitor {
 
             currentPass = Passes.FIND_CLASSES;
             classesDeclaration = new HashMap<>();
+            classesIndex = new ArrayList<>();
             program.accept(this);
             if(ErrorChecker.hasCriticalError()) break;
 
@@ -134,6 +136,7 @@ public class VisitorImpl implements Visitor {
             case FIND_CLASSES:
                 if (!classesDeclaration.containsKey(className)) {
                     classesDeclaration.put(className, classDeclaration);
+                    classesIndex.add(classDeclaration);
                 } else {
                     ErrorChecker.addError(new ClassRedefinition(classDeclaration));
                     String newName = classDeclaration.getName().getName() + "_" + Util.uniqueRandomString();
@@ -179,12 +182,12 @@ public class VisitorImpl implements Visitor {
         if (currentPass == Passes.FIND_METHODS || currentPass == Passes.PRE_ORDER_PRINT) {
             for (VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
                 varDeclaration.accept(this);
+        }
             for (MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
                 methodDeclaration.setInMainClass(isMainClass(classDeclaration));
                 methodDeclaration.accept(this);
-
             }
-        }
+
     }
 
     @Override
