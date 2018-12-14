@@ -50,7 +50,7 @@ public class ErrorChecker {
 
     static ArrayList<Error> getOnlyPhaseErrors(ErrorPhase phase) {
         ArrayList<Error> phaseErrors = new ArrayList<>();
-        for(Error error : errors)
+        for(Error error : getErrors())
             if(error.whichPhase() == phase)
                 phaseErrors.add(error);
         return phaseErrors;

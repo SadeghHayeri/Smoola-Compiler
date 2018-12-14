@@ -87,9 +87,6 @@ public class VisitorImpl implements Visitor {
             ErrorChecker.checkHasAnyClass(program);
             if(ErrorChecker.hasCriticalError()) break;
 
-//            ErrorChecker.checkCircularInheritance(classesDeclaration);
-//            if(ErrorChecker.hasCriticalError()) break;
-
             ClassDeclaration mainClass = program.getClasses().get(0);
             ErrorChecker.checkMainClassErrors(mainClass);
             if(ErrorChecker.hasCriticalError()) break;
@@ -525,8 +522,6 @@ public class VisitorImpl implements Visitor {
             case FIND_METHODS:
                 break;
             case FILL_SYMBOL_TABLE:
-                if(!isLeftValue(assign.getlValue()))
-                    ErrorChecker.addError(new BadLeftValue(assign.getlValue()));
                 break;
             case PRE_ORDER_PRINT:
                 Util.info(assign.toString());
