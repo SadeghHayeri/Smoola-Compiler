@@ -2,6 +2,10 @@ package ast.node.statement;
 
 import ast.Visitor;
 import ast.node.expression.Expression;
+import jasmin.instructions.*;
+import jasmin.utils.JlabelGenarator;
+
+import java.util.ArrayList;
 
 public class Write extends Statement {
     private Expression arg;
@@ -26,5 +30,17 @@ public class Write extends Statement {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        //TODO: for string only?
+        code.add(new Jcomment("Start writeln"));
+        code.addAll(getArg().toJasmin());
+//        code.add(new Jprintln()); //TODO
+        code.add(new Jcomment("End writeln"));
+        return code;
     }
 }

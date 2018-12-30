@@ -2,6 +2,10 @@ package ast.node.expression;
 
 import ast.Type.Type;
 import ast.Visitor;
+import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jcomment;
+import jasmin.instructions.Jinvokevirtual;
+import jasmin.instructions.Jload;
 
 import java.util.ArrayList;
 
@@ -47,5 +51,20 @@ public class MethodCall extends Expression {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        //TODO:////////////
+//        String className = ?
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new Jcomment("Start method-call"));
+        code.addAll(instance.toJasmin());
+        for (Expression arg : args) code.addAll(arg.toJasmin());
+//        code.add(new Jinvokevirtual())
+        code.add(new Jcomment("End method-call"));
+
+        return code;
     }
 }

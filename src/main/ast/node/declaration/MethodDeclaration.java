@@ -5,6 +5,8 @@ import ast.Visitor;
 import ast.node.expression.Expression;
 import ast.node.expression.Identifier;
 import ast.node.statement.Statement;
+import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jload;
 
 import java.util.ArrayList;
 
@@ -15,6 +17,11 @@ public class MethodDeclaration extends Declaration {
     private ArrayList<VarDeclaration> args = new ArrayList<>();
     private ArrayList<VarDeclaration> localVars = new ArrayList<>();
     private ArrayList<Statement> body = new ArrayList<>();
+    private ClassDeclaration containerClass;
+
+    public void setContainerClass(ClassDeclaration containerClass) {
+        this.containerClass = containerClass;
+    }
 
     public boolean isMainMethod() {
         return isInMainClass && name.getName().equals("main");
@@ -84,6 +91,21 @@ public class MethodDeclaration extends Declaration {
 
     public void addLocalVar(VarDeclaration localVar) {
         this.localVars.add(localVar);
+    }
+
+    public JasminStmt getVariableJasmin(Identifier variable) {
+        ArrayList<VarDeclaration> variables = new ArrayList<>();
+        variables.addAll(this.getArgs());
+        variables.addAll(this.getLocalVars());
+
+        for(int i = 0; i < variables.size(); i++) {
+            VarDeclaration currVal = variables.get(i);
+            String currVarName = currVal.getIdentifier().getName();
+            if (variable.getName().equals(currVarName))
+                return new Jload(currVal.getType(), i + JasminStmt.ARRAY_BASE);
+        }
+
+        return containerClass.getVariableJasmin(variable);
     }
 
     @Override

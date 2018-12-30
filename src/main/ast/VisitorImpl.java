@@ -110,9 +110,6 @@ public class VisitorImpl implements Visitor {
         else
             for(Error error : ErrorChecker.getErrors())
                 Util.error(error.toString());
-
-//        this.currentPass = Passes.PRE_ORDER_PRINT;
-//        program.accept(this);
     }
 
     public void visit(Program program) {
@@ -146,6 +143,7 @@ public class VisitorImpl implements Visitor {
                     String parentName = classDeclaration.getParentName().getName();
                     if (classesDeclaration.containsKey(parentName)) {
                         ClassDeclaration parent = classesDeclaration.get(parentName);
+                        classDeclaration.setParentClass(parent); // use for jasmin manipulation
                         parent.accept(this);
                         parentSymbolTable = classesSymbolTable.get(parentName);
                     } else {
@@ -167,11 +165,14 @@ public class VisitorImpl implements Visitor {
         if (classDeclaration.hasParent())
             classDeclaration.getParentName().accept(this);
         if (currentPass == Passes.FIND_METHODS) {
-            for (VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
+            for (VarDeclaration varDeclaration : classDeclaration.getVarDeclarations()) {
+                varDeclaration.setContainerClass(classDeclaration); // use for jasmin manipulation
                 varDeclaration.accept(this);
+            }
         }
         for (MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
             methodDeclaration.setInMainClass(isMainClass(classDeclaration));
+            methodDeclaration.setContainerClass(classDeclaration); // use for jasmin manipulation
             methodDeclaration.accept(this);
         }
 
@@ -215,6 +216,7 @@ public class VisitorImpl implements Visitor {
         }
         methodDeclaration.getName().accept(this);
         if(currentPass == Passes.FILL_SYMBOL_TABLE) {
+            int jIndex = 1;
             for (VarDeclaration varDeclaration : methodDeclaration.getArgs())
                 varDeclaration.accept(this);
             for (VarDeclaration varDeclaration : methodDeclaration.getLocalVars())

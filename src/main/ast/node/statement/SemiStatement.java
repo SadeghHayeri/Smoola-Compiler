@@ -3,6 +3,11 @@ package ast.node.statement;
 import ast.Visitor;
 import ast.node.Node;
 import ast.node.expression.Expression;
+import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jcomment;
+import jasmin.instructions.Jprintln;
+
+import java.util.ArrayList;
 
 public class SemiStatement extends Statement {
     private Expression inside;

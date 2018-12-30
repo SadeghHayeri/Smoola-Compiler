@@ -7,11 +7,16 @@ import ast.node.expression.Identifier;
 public class VarDeclaration extends Declaration {
     private Identifier identifier;
     private Type type;
+    private ClassDeclaration containerClass;
 
     public VarDeclaration(int line, Identifier identifier, Type type) {
         super(line);
         this.identifier = identifier;
         this.type = type;
+    }
+
+    public void setContainerClass(ClassDeclaration containerClass) {
+        this.containerClass = containerClass;
     }
 
     public Identifier getIdentifier() {
@@ -34,6 +39,7 @@ public class VarDeclaration extends Declaration {
     public String toString() {
         return "VarDeclaration";
     }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);

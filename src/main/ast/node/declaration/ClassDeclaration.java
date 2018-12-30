@@ -3,6 +3,9 @@ package ast.node.declaration;
 import ast.Util;
 import ast.Visitor;
 import ast.node.expression.Identifier;
+import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jgetfield;
+import jasmin.instructions.Jload;
 
 import java.util.ArrayList;
 
@@ -11,6 +14,11 @@ public class ClassDeclaration extends Declaration {
     private Identifier parentName = new Identifier(-1, Util.MASTER_OBJECT_NAME);
     private ArrayList<VarDeclaration> varDeclarations = new ArrayList<>();
     private ArrayList<MethodDeclaration> methodDeclarations = new ArrayList<>();
+    private ClassDeclaration parentClass;
+
+    public void setParentClass(ClassDeclaration parentClass) {
+        this.parentClass = parentClass;
+    }
 
     public ClassDeclaration(int line, Identifier name) {
         super(line);
@@ -62,5 +70,21 @@ public class ClassDeclaration extends Declaration {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    public JasminStmt getVariableJasmin(Identifier variable) {
+        ArrayList<VarDeclaration> variables = this.getVarDeclarations();
+        for (VarDeclaration currVal : variables) {
+            String currVarName = currVal.getIdentifier().getName();
+            if (variable.getName().equals(currVarName))
+                return new Jgetfield(name.getName(), variable.getName(), currVal.getType());
+        }
+
+        if(parentClass != null) {
+            return parentClass.getVariableJasmin(variable);
+        }
+
+        assert false;
+        return null;
     }
 }

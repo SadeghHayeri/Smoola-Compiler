@@ -2,6 +2,11 @@ package ast.node.statement;
 
 import ast.Visitor;
 import ast.node.expression.Expression;
+import jasmin.instructions.*;
+import jasmin.utils.Jbranch;
+import jasmin.utils.JlabelGenarator;
+
+import java.util.ArrayList;
 
 public class While extends Statement {
     private Expression condition;
@@ -36,5 +41,24 @@ public class While extends Statement {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+        String nStart = JlabelGenarator.unique("start");
+        String nExit = JlabelGenarator.unique("exit");
+
+        code.add(new Jcomment("Start while"));
+        code.add(new Jlabel(nStart));
+        code.addAll(getCondition().toJasmin());
+        code.add(new Jif(JrefType.i, JifOperator.eq, nExit));
+
+        code.addAll(getBody().toJasmin());
+        code.add(new Jgoto(nStart));
+
+        code.add(new Jlabel(nExit));
+        code.add(new Jcomment("End while"));
+        return code;
     }
 }
