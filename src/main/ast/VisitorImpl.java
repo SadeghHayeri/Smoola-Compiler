@@ -39,7 +39,6 @@ public class VisitorImpl implements Visitor {
         FIND_CLASSES,
         FIND_METHODS,
         FILL_SYMBOL_TABLE,
-        PRE_ORDER_PRINT
     }
 
     private HashMap<String, SymbolTable> classesSymbolTable;
@@ -117,12 +116,6 @@ public class VisitorImpl implements Visitor {
     }
 
     public void visit(Program program) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(program.toString());
-                break;
-        }
-
         for(ClassDeclaration classDeclaration : program.getClasses())
             classDeclaration.accept(this);
     }
@@ -168,22 +161,19 @@ public class VisitorImpl implements Visitor {
 
                 SymbolTable.top = classesSymbolTable.get(className);
                 break;
-            case PRE_ORDER_PRINT:
-                Util.info(classDeclaration.toString());
-                break;
         }
 
         classDeclaration.getName().accept(this);
         if (classDeclaration.hasParent())
             classDeclaration.getParentName().accept(this);
-        if (currentPass == Passes.FIND_METHODS || currentPass == Passes.PRE_ORDER_PRINT) {
+        if (currentPass == Passes.FIND_METHODS) {
             for (VarDeclaration varDeclaration : classDeclaration.getVarDeclarations())
                 varDeclaration.accept(this);
         }
-            for (MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
-                methodDeclaration.setInMainClass(isMainClass(classDeclaration));
-                methodDeclaration.accept(this);
-            }
+        for (MethodDeclaration methodDeclaration : classDeclaration.getMethodDeclarations()) {
+            methodDeclaration.setInMainClass(isMainClass(classDeclaration));
+            methodDeclaration.accept(this);
+        }
 
     }
 
@@ -222,12 +212,9 @@ public class VisitorImpl implements Visitor {
             case FILL_SYMBOL_TABLE:
                 SymbolTable.push(new SymbolTable(SymbolTable.top, false));
                 break;
-            case PRE_ORDER_PRINT:
-                Util.info(methodDeclaration.toString());
-                break;
         }
         methodDeclaration.getName().accept(this);
-        if(currentPass == Passes.FILL_SYMBOL_TABLE || currentPass == Passes.PRE_ORDER_PRINT) {
+        if(currentPass == Passes.FILL_SYMBOL_TABLE) {
             for (VarDeclaration varDeclaration : methodDeclaration.getArgs())
                 varDeclaration.accept(this);
             for (VarDeclaration varDeclaration : methodDeclaration.getLocalVars())
@@ -272,9 +259,6 @@ public class VisitorImpl implements Visitor {
                     }
                 }
                 break;
-            case PRE_ORDER_PRINT:
-                Util.info(varDeclaration.toString());
-                break;
         }
 
         varDeclaration.getIdentifier().accept(this);
@@ -282,56 +266,27 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(ArrayCall arrayCall) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(arrayCall.toString());
-                break;
-        }
-
         arrayCall.getInstance().accept(this);
         arrayCall.getIndex().accept(this);
     }
 
     @Override
     public void visit(BinaryExpression binaryExpression) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(binaryExpression.toString());
-                break;
-        }
-
         binaryExpression.getLeft().accept(this);
         binaryExpression.getRight().accept(this);
     }
 
     @Override
     public void visit(Identifier identifier) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(identifier.toString());
-                break;
-        }
     }
 
     @Override
     public void visit(Length length) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(length.toString());
-                break;
-        }
-
         length.getExpression().accept(this);
     }
 
     @Override
     public void visit(MethodCall methodCall) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(methodCall.toString());
-                break;
-        }
-
         methodCall.getInstance().accept(this);
         methodCall.getMethodName().accept(this);
         for(Expression expression : methodCall.getArgs())
@@ -368,9 +323,6 @@ public class VisitorImpl implements Visitor {
                 }
                 /////////////////////////////////////////////////////////////////////////////////
                 break;
-            case PRE_ORDER_PRINT:
-                Util.info(newArray.toString());
-                break;
         }
 
         newArray.getExpression().accept(this);
@@ -378,82 +330,38 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(NewClass newClass) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(newClass.toString());
-                break;
-        }
-
         newClass.getClassName().accept(this);
     }
 
     @Override
     public void visit(This instance) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(instance.toString());
-                break;
-        }
     }
 
     @Override
     public void visit(UnaryExpression unaryExpression) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(unaryExpression.toString());
-                break;
-        }
-
         unaryExpression.getValue().accept(this);
     }
 
     @Override
     public void visit(BooleanValue value) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(value.toString());
-                break;
-        }
     }
 
     @Override
     public void visit(IntValue value) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(value.toString());
-                break;
-        }
     }
 
     @Override
     public void visit(StringValue value) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(value.toString());
-                break;
-        }
     }
 
     @Override
     public void visit(Assign assign) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(assign.toString());
-                break;
-        }
-
         assign.getlValue().accept(this);
         assign.getrValue().accept(this);
     }
 
     @Override
     public void visit(Block block) {
-        switch (currentPass) {
-            case PRE_ORDER_PRINT:
-                Util.info(block.toString());
-                break;
-        }
-
         for(Statement statement : block.getBody())
             statement.accept(this);
     }
@@ -469,9 +377,6 @@ public class VisitorImpl implements Visitor {
                 Type conditionType = getExpType(classesDeclaration, classesSymbolTable, conditional.getExpression());
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(conditional.getExpression()));
-                break;
-            case PRE_ORDER_PRINT:
-                Util.info(conditional.toString());
                 break;
         }
 
@@ -493,9 +398,6 @@ public class VisitorImpl implements Visitor {
                 if(!isBooleanOrNoType(conditionType))
                     ErrorChecker.addError(new BadConditionType(loop.getCondition()));
                 break;
-            case PRE_ORDER_PRINT:
-                Util.info(loop.toString());
-                break;
         }
 
         loop.getCondition().accept(this);
@@ -514,9 +416,6 @@ public class VisitorImpl implements Visitor {
                 boolean validInsideType = isInt(insideType) || isString(insideType) || isArray(insideType) || isNoType(insideType);
                 if(!validInsideType)
                     ErrorChecker.addError(new BadWritelnType(write));
-                break;
-            case PRE_ORDER_PRINT:
-                Util.info(write.toString());
                 break;
         }
 
@@ -549,9 +448,6 @@ public class VisitorImpl implements Visitor {
                         return;
                 }
                 ErrorChecker.addError(new NotAStatement(semiStatement));
-                break;
-            case PRE_ORDER_PRINT:
-//                Util.info();(semiStatement.toString());
                 break;
         }
     }
