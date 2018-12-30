@@ -2,6 +2,11 @@ package ast.node.expression.Value;
 
 import ast.Type.PrimitiveType.IntType;
 import ast.Visitor;
+import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jcomment;
+import jasmin.instructions.Jpush;
+
+import java.util.ArrayList;
 
 public class IntValue extends Value {
     private int constant;
@@ -27,5 +32,16 @@ public class IntValue extends Value {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new Jcomment("Start int-value"));
+        code.add(new Jpush(constant));
+        code.add(new Jcomment("End int-value"));
+
+        return code;
     }
 }
