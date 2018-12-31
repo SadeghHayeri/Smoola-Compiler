@@ -207,6 +207,9 @@ public class ExpressionChecker {
         boolean isEqOrNeq = operator == BinaryOperator.eq
                 || operator == BinaryOperator.neq;
 
+        boolean isRelational = operator == BinaryOperator.lt
+                || operator == BinaryOperator.gt;
+
         boolean isAssign = operator == BinaryOperator.assign;
 
         if(isArithmeticOperator) {
@@ -219,6 +222,10 @@ public class ExpressionChecker {
             return new BooleanType();
         } else if(isEqOrNeq) {
             if(!haveSameType(leftType, rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            return new BooleanType();
+        } else if(isRelational) {
+            if(!isIntOrNoType(leftType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
+            if(!isIntOrNoType(rightType)) ErrorChecker.addError(new UnsupportedOperand(binaryExpression));
             return new BooleanType();
         } else if(isAssign) {
             if(!isLeftValue(binaryExpression.getLeft())) ErrorChecker.addError(new BadLeftValue(binaryExpression));
