@@ -65,8 +65,6 @@ public class BinaryExpression extends Expression {
         ArrayList<JasminStmt> code = new ArrayList<>();
 
         code.add(new Jcomment("Start binary-exp"));
-        code.addAll(getLeft().toJasmin());
-        code.addAll(getRight().toJasmin());
 
         String putTrueLabel = JlabelGenarator.unique("put_true");
         String putFalseLabel = JlabelGenarator.unique("put_false");
@@ -82,7 +80,7 @@ public class BinaryExpression extends Expression {
                 } else {
                     code.addAll(left.toJasmin());
                     code.addAll(right.toJasmin());
-                    code.add(new Jinvokevirtual("java/lang/Object", "equals", "Ljava/lang/Object;", "Z"));
+                    code.add(new Jinvoke(JinvokeType.VIRTUAL, "java/lang/Object", "equals", "Ljava/lang/Object;", "Z"));
                 }
                 break;
             case neq:
@@ -94,8 +92,8 @@ public class BinaryExpression extends Expression {
                 } else {
                     code.addAll(left.toJasmin());
                     code.addAll(right.toJasmin());
-                    code.add(new Jinvokevirtual("java/lang/Object", "equals", "Ljava/lang/Object;", "Z"));
-                    code.add(new Jif(JrefType.i, JifOperator.ge, putFalseLabel));
+                    code.add(new Jinvoke(JinvokeType.VIRTUAL,"java/lang/Object", "equals", "Ljava/lang/Object;", "Z"));
+                    code.add(new Jif(JifOperator.ge, putFalseLabel));
                     code.add(new Jgoto(putTrueLabel));
                 }
                 break;
@@ -113,16 +111,16 @@ public class BinaryExpression extends Expression {
                 break;
             case or:
                 code.addAll(left.toJasmin());
-                code.add(new Jif(JrefType.i, JifOperator.ge, putTrueLabel));
+                code.add(new Jif(JifOperator.ge, putTrueLabel));
                 code.addAll(right.toJasmin());
-                code.add(new Jif(JrefType.i, JifOperator.ge, putTrueLabel));
+                code.add(new Jif(JifOperator.ge, putTrueLabel));
                 code.add(new Jgoto(putFalseLabel));
                 break;
             case and:
                 code.addAll(left.toJasmin());
-                code.add(new Jif(JrefType.i, JifOperator.le, putFalseLabel));
+                code.add(new Jif(JifOperator.le, putFalseLabel));
                 code.addAll(right.toJasmin());
-                code.add(new Jif(JrefType.i, JifOperator.le, putFalseLabel));
+                code.add(new Jif(JifOperator.le, putFalseLabel));
                 code.add(new Jgoto(putTrueLabel));
                 break;
             case add:
@@ -166,6 +164,8 @@ public class BinaryExpression extends Expression {
         code.add(new Jlabel(putFalseLabel));
         code.add(new Jpush(false));
         code.add(new Jgoto(finishLabel));
+
+        code.add(new Jlabel(finishLabel));
 
         code.add(new Jcomment("End binary-exp"));
 

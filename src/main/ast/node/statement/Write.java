@@ -48,25 +48,25 @@ public class Write extends Statement {
         code.add(new Jdup());
 
         code.add(new Jinstanceof("java/lang/String"));
-        code.add(new Jif(JrefType.a, JifOperator.ne, haveStringLabel));
+        code.add(new Jif(JifOperator.ne, haveStringLabel));
 
         code.add(new Jinstanceof("[I"));
-        code.add(new Jif(JrefType.a, JifOperator.ne, haveArrayLabel));
+        code.add(new Jif(JifOperator.ne, haveArrayLabel));
 
         code.add(new Jgoto(haveIntLabel));
 
         code.add(new Jlabel(haveStringLabel)); // string
         code.add(new Jpop());
-        code.add(new Jinvokevirtual("java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
+        code.add(new Jinvoke(JinvokeType.VIRTUAL, "java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
         code.add(new Jgoto(finishLabel));
 
         code.add(new Jlabel(haveArrayLabel)); // array
-        code.add(new Jinvokevirtual("java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
+        code.add(new Jinvoke(JinvokeType.VIRTUAL,"java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
         code.add(new Jgoto(finishLabel));
 
         code.add(new Jlabel(haveIntLabel)); // int
-        code.add(new Jinvokestatic("java/util/Arrays", "toString", "[I", "Ljava/lang/String"));
-        code.add(new Jinvokevirtual("java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
+        code.add(new Jinvoke(JinvokeType.STATIC,"java/util/Arrays", "toString", "[I", "Ljava/lang/String"));
+        code.add(new Jinvoke(JinvokeType.VIRTUAL,"java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
         code.add(new Jgoto(finishLabel));
 
         code.add(new Jlabel(finishLabel)); // finish

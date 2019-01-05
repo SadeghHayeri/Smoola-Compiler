@@ -1,5 +1,5 @@
 package jasmin.instructions;
 
 public enum  JrefType {
-    i, a
+    i, a, VOID
 }

@@ -2,11 +2,7 @@ package ast.node.expression;
 
 import ast.Type.Type;
 import ast.Visitor;
-import ast.node.declaration.VarDeclaration;
-import jasmin.instructions.JasminStmt;
-import jasmin.instructions.Jcomment;
-import jasmin.instructions.Jinvokevirtual;
-import jasmin.instructions.Jload;
+import jasmin.instructions.*;
 
 import java.util.ArrayList;
 
@@ -78,7 +74,7 @@ public class MethodCall extends Expression {
         code.addAll(instance.toJasmin());
         for (Expression arg : args)
             code.addAll(arg.toJasmin());
-        code.add(new Jinvokevirtual(className, methodName.getName(), argsType, returnType));
+        code.add(new Jinvoke(JinvokeType.VIRTUAL, className, methodName.getName(), argsType, returnType));
         code.add(new Jcomment("End method-call"));
 
         return code;

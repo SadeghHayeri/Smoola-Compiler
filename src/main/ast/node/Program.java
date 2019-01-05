@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import ast.node.declaration.ClassDeclaration;
-import jasmin.instructions.JasminStmt;
+import jasmin.instructions.*;
 
 import java.util.List;
 
@@ -42,10 +42,19 @@ public class Program extends Node {
     public void compile() {
         try {
             for(ClassDeclaration classDeclaration : classes) {
-                PrintWriter writer = new PrintWriter(classDeclaration.getName().getName() + ".j", "UTF-8");
+                PrintWriter writer = new PrintWriter("../../out/" + classDeclaration.getName().getName() + ".j", "UTF-8");
 
-                for(JasminStmt jasminStmt : classDeclaration.toJasmin())
-                    writer.println(jasminStmt.toString());
+                for(JasminStmt jasminStmt : classDeclaration.toJasmin()) {
+                    if(jasminStmt instanceof JstartClass || jasminStmt instanceof JsuperClass)
+                        writer.println(jasminStmt.toString());
+                    else if(jasminStmt instanceof JstartMethod || jasminStmt instanceof JendMethod || jasminStmt instanceof Jlabel)
+                        writer.println("\t" + jasminStmt.toString());
+                    else
+                        writer.println("\t\t" +jasminStmt.toString());
+
+                    if(jasminStmt instanceof JendMethod || jasminStmt instanceof JsuperClass)
+                        writer.println("");
+                }
 
                 writer.close();
             }

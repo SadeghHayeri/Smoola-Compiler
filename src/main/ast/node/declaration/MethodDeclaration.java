@@ -7,6 +7,7 @@ import ast.node.expression.Expression;
 import ast.node.expression.Identifier;
 import ast.node.statement.Statement;
 import jasmin.instructions.*;
+import static ast.TypeChecker.*;
 
 import java.util.ArrayList;
 
@@ -150,14 +151,16 @@ public class MethodDeclaration extends Declaration {
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
 
-        code.add(new JstartMethod(name.toString(), getArgsType(), returnType));
+        code.add(new JstartMethod(name.getName(), getArgsType(), returnType));
         code.add(new Jlimit("stack", Util.MAX_STACK));
         code.add(new Jlimit("locals", Util.MAX_LOCALS));
 
         for(Statement statement : body)
             code.addAll(statement.toJasmin());
 
-        code.add(new JendMethod(name.toString()));
+        code.addAll(returnValue.toJasmin());
+        code.add(new Jreturn(isInt(returnType) || isBoolean(returnType) ? JrefType.i : JrefType.a));
+        code.add(new JendMethod(name.getName()));
 
         return code;
     }

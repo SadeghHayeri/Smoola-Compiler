@@ -47,7 +47,7 @@ public class UnaryExpression extends Expression {
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
 
-        code.add(new Jcomment("Start binary-exp"));
+        code.add(new Jcomment("Start unary-exp"));
         code.addAll(value.toJasmin());
 
         String putTrueLabel = JlabelGenarator.unique("put_true");
@@ -61,7 +61,7 @@ public class UnaryExpression extends Expression {
                 break;
             case not:
                 code.addAll(value.toJasmin());
-                code.add(new Jif(JrefType.i, JifOperator.ge, putFalseLabel));
+                code.add(new Jif(JifOperator.ge, putFalseLabel));
                 code.add(new Jgoto(putTrueLabel));
                 break;
         }
@@ -76,7 +76,7 @@ public class UnaryExpression extends Expression {
         code.add(new Jpush(false));
         code.add(new Jgoto(finishLabel));
 
-        code.add(new Jcomment("End binary-exp"));
+        code.add(new Jcomment("End unary-exp"));
 
         return code;
     }

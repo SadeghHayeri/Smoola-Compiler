@@ -8,6 +8,6 @@ public class JendMethod extends JasminStmt {
 
     @Override
     public String toString() {
-        return ".endmethod " + "; " + methodName;
+        return ".end method " + "; " + methodName;
     }
 }

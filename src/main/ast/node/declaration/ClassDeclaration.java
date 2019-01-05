@@ -108,12 +108,14 @@ public class ClassDeclaration extends Declaration {
 
         String parentRef = hasParent() ? parentClass.getName().getName() : "java/lang/Object";
 
-        code.add(new JstartClass(name.toString(), parentRef));
+        code.add(new JstartClass(name.getName()));
+        code.add(new JsuperClass(parentRef));
 
         // constructor
         code.add(new JstartMethod("<init>", "", "V"));
         code.add(new Jload(JrefType.a, 0));
-        code.add(new Jinvoke(parentRef, "<init>", "", "V"));
+        code.add(new Jinvoke(JinvokeType.SPECIAL, parentRef, "<init>", "", "V"));
+        code.add(new Jreturn(JrefType.VOID));
         code.add(new JendMethod("<init>"));
 
         for(MethodDeclaration methodDeclaration : getMethodDeclarations())
