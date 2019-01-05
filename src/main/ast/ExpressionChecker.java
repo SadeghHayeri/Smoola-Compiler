@@ -159,7 +159,7 @@ public class ExpressionChecker {
             case NEW_ARRAY:
                 Type indexExpType = getExpType(classesDeclaration, classesSymbolTable, NA(exp).getExpression());
                 if(!isIntOrNoType(indexExpType)) ErrorChecker.addError(new BadIndexType(NA(exp).getExpression()));
-                return new ArrayType(); //TODO: set size!
+                return new ArrayType();
             case BINARY_EXP:
                 return getBinaryExpressionType(classesDeclaration, classesSymbolTable, BE(exp));
             case UNARY_EXP:
@@ -174,14 +174,14 @@ public class ExpressionChecker {
                         return new IntType();
                 }
 
-                assert false; //TODO: check no access!
+                assert false;
                 return new NoType();
             case BAD_TYPE:
                 assert false;
                 break;
         }
 
-        assert false; //TODO: check no access!
+        assert false;
         return new NoType();
     }
 
@@ -238,7 +238,7 @@ public class ExpressionChecker {
             }
         }
 
-        assert false; //TODO: check no access!
+        assert false;
         return new NoType();
     }
 

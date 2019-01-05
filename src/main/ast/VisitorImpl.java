@@ -310,21 +310,6 @@ public class VisitorImpl implements Visitor {
                     if(value == 0)
                         ErrorChecker.addError(new BadArraySize(newArray));
                 }
-
-                //////////////////// TODO: remove in phase 4 (pre-process) //////////////////////
-                boolean isUnary = exp instanceof UnaryExpression;
-                if(isUnary) {
-                    UnaryExpression unaryExp = (UnaryExpression)exp;
-                    if(unaryExp.getUnaryOperator() == UnaryOperator.minus) {
-                        Expression innerExp = unaryExp.getValue();
-                        if(innerExp instanceof IntValue) {
-                            int value = ((IntValue)innerExp).getConstant();
-                            if(value >= 0)
-                                ErrorChecker.addError(new BadArraySize(newArray));
-                        }
-                    }
-                }
-                /////////////////////////////////////////////////////////////////////////////////
                 break;
         }
 

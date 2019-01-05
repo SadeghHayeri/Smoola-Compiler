@@ -6,7 +6,6 @@ import ast.node.expression.Identifier;
 import jasmin.instructions.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ClassDeclaration extends Declaration {
     private Identifier name;
@@ -114,7 +113,7 @@ public class ClassDeclaration extends Declaration {
         // constructor
         code.add(new JstartMethod("<init>", "", "V"));
         code.add(new Jload(JrefType.a, 0));
-        code.add(new Jinvokespecial(parentRef, "<init>", "", "V"));
+        code.add(new Jinvoke(parentRef, "<init>", "", "V"));
         code.add(new JendMethod("<init>"));
 
         for(MethodDeclaration methodDeclaration : getMethodDeclarations())
