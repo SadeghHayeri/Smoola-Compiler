@@ -2,6 +2,10 @@ package jasmin.instructions;
 
 public class Jarraylength extends JasminStmt {
     public Jarraylength() {
-        //TODO
+    }
+
+    @Override
+    public String toString() {
+        return "arraylength";
     }
 }

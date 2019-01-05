@@ -2,6 +2,10 @@ package jasmin.instructions;
 
 public class Jnewarray extends JasminStmt {
     public Jnewarray() {
-        //TODO
+    }
+
+    @Override
+    public String toString() {
+        return "newarray int";
     }
 }

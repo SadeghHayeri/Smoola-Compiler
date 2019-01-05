@@ -1,7 +1,13 @@
 package jasmin.instructions;
 
 public class Jlabel extends JasminStmt {
+    private String label;
     public Jlabel(String label) {
-        //TODO
+        this.label = label;
+    }
+
+    @Override
+    public String toString() {
+        return label + ":";
     }
 }

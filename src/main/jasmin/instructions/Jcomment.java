@@ -1,7 +1,13 @@
 package jasmin.instructions;
 
 public class Jcomment extends JasminStmt {
+    private String comment;
     public Jcomment(String comment) {
-        //TODO
+        this.comment = comment;
+    }
+
+    @Override
+    public String toString() {
+        return "; " + comment;
     }
 }

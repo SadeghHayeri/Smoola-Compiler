@@ -12,4 +12,9 @@ public class Jif_icmp extends JasminStmt {
         this.ifOperator = operator;
         this.label = label;
     }
+
+    @Override
+    public String toString() {
+        return "if_" + refType.toString() + "cmp" + ifOperator.toString() + " " + label;
+    }
 }

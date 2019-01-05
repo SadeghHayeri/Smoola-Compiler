@@ -2,6 +2,10 @@ package jasmin.instructions;
 
 public class Jdup extends JasminStmt {
     public Jdup() {
-        //TODO
+    }
+
+    @Override
+    public String toString() {
+        return "dup";
     }
 }

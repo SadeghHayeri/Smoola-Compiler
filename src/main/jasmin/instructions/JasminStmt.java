@@ -1,6 +1,6 @@
 package jasmin.instructions;
 
-public class JasminStmt {
+public abstract class JasminStmt {
     public static final int ARRAY_BASE = 1;
 
     @Override

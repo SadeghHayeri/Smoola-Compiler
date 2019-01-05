@@ -4,6 +4,10 @@ public class JendMethod extends JasminStmt {
     String methodName;
     public JendMethod(String methodName) {
         this.methodName = methodName;
-        //TODO
+    }
+
+    @Override
+    public String toString() {
+        return ".endmethod " + "; " + methodName;
     }
 }

@@ -17,4 +17,12 @@ public class Jpush extends JasminStmt {
         this.isString = false;
         this.iValue = value ? 1 : 0;
     }
+
+    @Override
+    public String toString() {
+        if(isString)
+            return "ldc " + sValue;
+        else
+            return "ldc " + iValue;
+    }
 }

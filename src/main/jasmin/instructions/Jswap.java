@@ -2,6 +2,10 @@ package jasmin.instructions;
 
 public class Jswap extends JasminStmt {
     public Jswap() {
-        //TODO
+    }
+
+    @Override
+    public String toString() {
+        return "swap";
     }
 }
