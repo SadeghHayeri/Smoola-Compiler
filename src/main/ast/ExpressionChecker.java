@@ -58,11 +58,11 @@ public class ExpressionChecker {
     static boolean isBooleanValue(Expression exp)       { return exp instanceof BooleanValue; }
     static boolean isIntValue(Expression exp)           { return exp instanceof IntValue; }
     static boolean isStringValue(Expression exp)        { return exp instanceof StringValue; }
-    static boolean isIdentifier(Expression exp)         { return exp instanceof Identifier; }
+    public static boolean isIdentifier(Expression exp)         { return exp instanceof Identifier; }
     static boolean isThis(Expression exp)               { return exp instanceof This; }
     static boolean isNewClass(Expression exp)           { return exp instanceof NewClass; }
     static boolean isMethodCall(Expression exp)         { return exp instanceof MethodCall; }
-    static boolean isArrayCall(Expression exp)          { return exp instanceof ArrayCall; }
+    public static boolean isArrayCall(Expression exp)          { return exp instanceof ArrayCall; }
     static boolean isLength(Expression exp)             { return exp instanceof Length; }
     static boolean isNewArray(Expression exp)           { return exp instanceof NewArray; }
     static boolean isBinaryExpression(Expression exp)   { return exp instanceof BinaryExpression; }
@@ -71,11 +71,11 @@ public class ExpressionChecker {
     static BooleanValue BOOL(Expression exp)      { return (BooleanValue) exp; }
     static IntValue INT(Expression exp)           { return (IntValue) exp; }
     static StringValue STR(Expression exp)        { return (StringValue) exp; }
-    static Identifier ID(Expression exp)          { return (Identifier) exp; }
+    public static Identifier ID(Expression exp)          { return (Identifier) exp; }
     static This THIS(Expression exp)              { return (This) exp; }
     static NewClass NC(Expression exp)            { return (NewClass) exp; }
     static MethodCall MC(Expression exp)          { return (MethodCall) exp; }
-    static ArrayCall AC(Expression exp)           { return (ArrayCall) exp; }
+    public static ArrayCall AC(Expression exp)           { return (ArrayCall) exp; }
     static Length LEN(Expression exp)             { return (Length) exp; }
     static NewArray NA(Expression exp)            { return (NewArray) exp; }
     static BinaryExpression BE(Expression exp)    { return (BinaryExpression) exp; }
@@ -194,6 +194,7 @@ public class ExpressionChecker {
     private static Type getBinaryExpressionType(HashMap<String, ClassDeclaration> classesDeclaration, HashMap<String, SymbolTable> classesSymbolTable, BinaryExpression binaryExpression) {
         Type leftType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getLeft());
         Type rightType = getExpType(classesDeclaration, classesSymbolTable, binaryExpression.getRight());
+        binaryExpression.setSidesType(leftType);
 
         BinaryOperator operator = binaryExpression.getBinaryOperator();
         boolean isArithmeticOperator = operator == BinaryOperator.mult
@@ -253,7 +254,7 @@ public class ExpressionChecker {
             if(classesSymbolTable.containsKey(className)) {
                 SymbolTable classSymbolTable = classesSymbolTable.get(className);
                 try {
-                    SymbolTableMethodItem methodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
+                    SymbolTableMethodItem  methodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
                     ArrayList<Type> argsType = methodItem.getArgTypes();
                     if(args.size() == argsType.size()) {
                         for(int i = 0; i < args.size(); i++) {
@@ -266,6 +267,9 @@ public class ExpressionChecker {
                         }
                         return methodItem.getReturnType();
                     } else ErrorChecker.addError(new ArgsMismatch(methodCall));
+                    methodCall.setClassName(className);
+                    methodCall.setArgsType(argsType);
+                    methodCall.setReturnType(methodItem.getReturnType());
                     return methodItem.getReturnType();
                 } catch (ItemNotFoundException e) {
                     String instanceName = ((UserDefinedType)getExpType(classesDeclaration, classesSymbolTable, methodCall.getInstance())).getName().getName();

@@ -18,6 +18,8 @@ public class Util {
 
     public static final boolean colorful = false;
     public static final String MASTER_OBJECT_NAME = "Object";
+    public static final int MAX_STACK = 30;
+    public static final int MAX_LOCALS = 30;
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";

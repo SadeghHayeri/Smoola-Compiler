@@ -6,7 +6,7 @@ public class Jload extends JasminStmt {
     private JrefType refType;
 
     public Jload() {
-        // iaload
+        //TODO: iaload
     }
 
     public Jload(JrefType type, int index) {

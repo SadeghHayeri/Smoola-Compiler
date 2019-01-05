@@ -1,12 +1,12 @@
 package ast.node.declaration;
 
 import ast.Type.Type;
+import ast.Util;
 import ast.Visitor;
 import ast.node.expression.Expression;
 import ast.node.expression.Identifier;
 import ast.node.statement.Statement;
-import jasmin.instructions.JasminStmt;
-import jasmin.instructions.Jload;
+import jasmin.instructions.*;
 
 import java.util.ArrayList;
 
@@ -93,7 +93,9 @@ public class MethodDeclaration extends Declaration {
         this.localVars.add(localVar);
     }
 
-    public JasminStmt getVariableJasmin(Identifier variable) {
+    public ArrayList<JasminStmt> getVariableJasmin(String variable) {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
         ArrayList<VarDeclaration> variables = new ArrayList<>();
         variables.addAll(this.getArgs());
         variables.addAll(this.getLocalVars());
@@ -101,19 +103,62 @@ public class MethodDeclaration extends Declaration {
         for(int i = 0; i < variables.size(); i++) {
             VarDeclaration currVal = variables.get(i);
             String currVarName = currVal.getIdentifier().getName();
-            if (variable.getName().equals(currVarName))
-                return new Jload(currVal.getType(), i + JasminStmt.ARRAY_BASE);
+            if (variable.equals(currVarName)) {
+                code.add(new Jload(currVal.getType(), i + JasminStmt.ARRAY_BASE));
+                return code;
+            }
         }
 
-        return containerClass.getVariableJasmin(variable);
+        code.add(new Jload(JrefType.a, 0)); // add ref
+        code.add(containerClass.getVariableJasmin(variable));
+        return code;
+    }
+
+    public ArrayList<JasminStmt> setVariableJasmin(String variable) {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        ArrayList<VarDeclaration> variables = new ArrayList<>();
+        variables.addAll(this.getArgs());
+        variables.addAll(this.getLocalVars());
+
+        for(int i = 0; i < variables.size(); i++) {
+            VarDeclaration currVal = variables.get(i);
+            String currVarName = currVal.getIdentifier().getName();
+            if (variable.equals(currVarName)) {
+                code.add(new Jstore(currVal.getType(), i + JasminStmt.ARRAY_BASE));
+                return code;
+            }
+        }
+
+        code.add(new Jload(JrefType.a, 0));
+        code.add(new Jswap());
+        code.add(containerClass.setVariableJasmin(variable));
+        return code;
     }
 
     @Override
     public String toString() {
         return "MethodDeclaration";
     }
+
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new JstartMethod(name.toString(), getArgsType(), returnType));
+        code.add(new Jlimit("stack", Util.MAX_STACK));
+        code.add(new Jlimit("locals", Util.MAX_LOCALS));
+
+        for(Statement statement : body)
+            code.addAll(statement.toJasmin());
+
+        code.add(new JendMethod(name.toString()));
+
+        return code;
     }
 }

@@ -44,6 +44,7 @@ public class VisitorImpl implements Visitor {
     private HashMap<String, SymbolTable> classesSymbolTable;
     private HashMap<String, ClassDeclaration> classesDeclaration;
     private ClassDeclaration mainClassDeclaration = null;
+    private MethodDeclaration currentMethod = null;
     private Passes currentPass;
 
     private void addObjectClass(Program program) {
@@ -103,13 +104,11 @@ public class VisitorImpl implements Visitor {
 
         } while (false);
 
-        ArrayList<Error> phase2Errors = ErrorChecker.getOnlyPhaseErrors(ErrorPhase.PHASE2);
-        if(!phase2Errors.isEmpty())
-            for(Error error : phase2Errors)
-                Util.error(error.toString());
-        else
+        if(ErrorChecker.hasError())
             for(Error error : ErrorChecker.getErrors())
                 Util.error(error.toString());
+        else
+            program.compile();
     }
 
     public void visit(Program program) {
@@ -180,6 +179,7 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(MethodDeclaration methodDeclaration) {
+        this.currentMethod = methodDeclaration;
         boolean isMainMethod = methodDeclaration.isMainMethod();
         switch (currentPass) {
             case FIND_CLASSES:
@@ -280,6 +280,7 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(Identifier identifier) {
+        identifier.setContainerMethod(currentMethod);
     }
 
     @Override
@@ -446,7 +447,7 @@ public class VisitorImpl implements Visitor {
                     }
 
                     // is in main class
-                    if(semiStatement.isInMainMethod())
+                    if(semiStatement.isInMainMethod() && isMethodCall(insideExp))
                         return;
                 }
                 ErrorChecker.addError(new NotAStatement(semiStatement));

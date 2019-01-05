@@ -46,6 +46,7 @@ public class While extends Statement {
     @Override
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
+
         String nStart = JlabelGenarator.unique("start");
         String nExit = JlabelGenarator.unique("exit");
 

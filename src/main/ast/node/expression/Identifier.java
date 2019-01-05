@@ -1,14 +1,23 @@
 package ast.node.expression;
 
 import ast.Visitor;
+import ast.node.declaration.MethodDeclaration;
 import jasmin.instructions.JasminStmt;
 import jasmin.instructions.Jcomment;
-import jasmin.instructions.Jload;
 
 import java.util.ArrayList;
 
 public class Identifier extends Expression {
     private String name;
+    private MethodDeclaration containerMethod;
+
+    public MethodDeclaration getContainerMethod() {
+        return containerMethod;
+    }
+
+    public void setContainerMethod(MethodDeclaration containerMethod) {
+        this.containerMethod = containerMethod;
+    }
 
     public Identifier(int line, String name) {
         super(line);
@@ -38,8 +47,18 @@ public class Identifier extends Expression {
         ArrayList<JasminStmt> code = new ArrayList<>();
 
         code.add(new Jcomment("Start identifier"));
-        //TODO////////////////////////////
+        code.addAll(this.containerMethod.getVariableJasmin(this.name));
         code.add(new Jcomment("End identifier"));
+
+        return code;
+    }
+
+    public ArrayList<JasminStmt> toStoreJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new Jcomment("Start store-identifier"));
+        code.addAll(this.containerMethod.setVariableJasmin(this.name));
+        code.add(new Jcomment("End store-identifier"));
 
         return code;
     }

@@ -2,6 +2,7 @@ package ast.node.expression;
 
 import ast.Type.Type;
 import ast.Visitor;
+import ast.node.declaration.VarDeclaration;
 import jasmin.instructions.JasminStmt;
 import jasmin.instructions.Jcomment;
 import jasmin.instructions.Jinvokevirtual;
@@ -10,8 +11,24 @@ import jasmin.instructions.Jload;
 import java.util.ArrayList;
 
 public class MethodCall extends Expression {
+    private String className;
     private Expression instance;
     private Identifier methodName;
+    private ArrayList<Type> argsType;
+    private Type returnType;
+
+    public void setReturnType(Type returnType) {
+        this.returnType = returnType;
+    }
+
+    public void setArgsType(ArrayList<Type> argsType) {
+        this.argsType = argsType;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
     public MethodCall(int line, Expression instance, Identifier methodName) {
         super(line);
         this.instance = instance;
@@ -55,14 +72,13 @@ public class MethodCall extends Expression {
 
     @Override
     public ArrayList<JasminStmt> toJasmin() {
-        //TODO:////////////
-//        String className = ?
         ArrayList<JasminStmt> code = new ArrayList<>();
 
         code.add(new Jcomment("Start method-call"));
         code.addAll(instance.toJasmin());
-        for (Expression arg : args) code.addAll(arg.toJasmin());
-//        code.add(new Jinvokevirtual())
+        for (Expression arg : args)
+            code.addAll(arg.toJasmin());
+        code.add(new Jinvokevirtual(className, methodName.getName(), argsType, returnType));
         code.add(new Jcomment("End method-call"));
 
         return code;

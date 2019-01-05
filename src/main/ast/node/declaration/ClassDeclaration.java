@@ -3,11 +3,10 @@ package ast.node.declaration;
 import ast.Util;
 import ast.Visitor;
 import ast.node.expression.Identifier;
-import jasmin.instructions.JasminStmt;
-import jasmin.instructions.Jgetfield;
-import jasmin.instructions.Jload;
+import jasmin.instructions.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ClassDeclaration extends Declaration {
     private Identifier name;
@@ -72,12 +71,12 @@ public class ClassDeclaration extends Declaration {
         visitor.visit(this);
     }
 
-    public JasminStmt getVariableJasmin(Identifier variable) {
+    public JasminStmt getVariableJasmin(String variable) {
         ArrayList<VarDeclaration> variables = this.getVarDeclarations();
         for (VarDeclaration currVal : variables) {
             String currVarName = currVal.getIdentifier().getName();
-            if (variable.getName().equals(currVarName))
-                return new Jgetfield(name.getName(), variable.getName(), currVal.getType());
+            if (variable.equals(currVarName))
+                return new Jgetfield(name.getName(), variable, currVal.getType());
         }
 
         if(parentClass != null) {
@@ -86,5 +85,41 @@ public class ClassDeclaration extends Declaration {
 
         assert false;
         return null;
+    }
+
+    public JasminStmt setVariableJasmin(String variable) {
+        ArrayList<VarDeclaration> variables = this.getVarDeclarations();
+        for (VarDeclaration currVal : variables) {
+            String currVarName = currVal.getIdentifier().getName();
+            if (variable.equals(currVarName))
+                return new Jputfield(name.getName(), variable, currVal.getType());
+        }
+
+        if(parentClass != null) {
+            return parentClass.getVariableJasmin(variable);
+        }
+
+        assert false;
+        return null;
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        String parentRef = hasParent() ? parentClass.getName().getName() : "java/lang/Object";
+
+        code.add(new JstartClass(name.toString(), parentRef));
+
+        // constructor
+        code.add(new JstartMethod("<init>", "", "V"));
+        code.add(new Jload(JrefType.a, 0));
+        code.add(new Jinvokespecial(parentRef, "<init>", "", "V"));
+        code.add(new JendMethod("<init>"));
+
+        for(MethodDeclaration methodDeclaration : getMethodDeclarations())
+            code.addAll(methodDeclaration.toJasmin());
+
+        return code;
     }
 }

@@ -1,11 +1,10 @@
 package ast.node.statement;
 
 import ast.Visitor;
-import ast.node.Node;
 import ast.node.expression.Expression;
 import jasmin.instructions.JasminStmt;
 import jasmin.instructions.Jcomment;
-import jasmin.instructions.Jprintln;
+import jasmin.instructions.Jpop;
 
 import java.util.ArrayList;
 
@@ -37,5 +36,17 @@ public class SemiStatement extends Statement {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new Jcomment("Start semi-statement"));
+        code.addAll(inside.toJasmin());
+        code.add(new Jpop());
+        code.add(new Jcomment("End semi-statement"));
+
+        return code;
     }
 }

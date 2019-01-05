@@ -1,7 +1,6 @@
 package jasmin.instructions;
 
 import ast.Type.Type;
-import com.sun.codemodel.internal.JType;
 
 public class Jgetfield extends JasminStmt {
     private JrefType refType;

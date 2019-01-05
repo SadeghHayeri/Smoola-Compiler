@@ -1,9 +1,7 @@
 package ast.node.expression;
 
 import ast.Visitor;
-import jasmin.instructions.JasminStmt;
-import jasmin.instructions.Jcomment;
-import jasmin.instructions.Jload;
+import jasmin.instructions.*;
 
 import java.util.ArrayList;
 
@@ -51,6 +49,20 @@ public class ArrayCall extends Expression {
         code.addAll(getIndex().toJasmin());
         code.add(new Jload());
         code.add(new Jcomment("End array-call"));
+
+        return code;
+    }
+
+    public ArrayList<JasminStmt> toStoreJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        code.add(new Jcomment("Start store-array-call"));
+        code.addAll(getInstance().toJasmin());
+        code.add(new Jswap()); // move 'value' above 'ref'
+        code.addAll(getIndex().toJasmin());
+        code.add(new Jswap()); // move 'value' above 'index'
+        code.add(new Jstore());
+        code.add(new Jcomment("End store-array-call"));
 
         return code;
     }
