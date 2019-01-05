@@ -12,7 +12,6 @@ public class UndefinedMethod extends MethodError {
     public UndefinedMethod(MethodCall methodCall, String className) {
         super(methodCall.getLine());
         Expression classExp = methodCall.getInstance();
-        //TODO: exp -> class
         this.className = className;
         this.methodName = methodCall.getMethodName().getName();
     }
