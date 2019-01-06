@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class Util {
 
-    public static final boolean colorful = false;
+    public static final boolean colorful = true;
     public static final String MASTER_OBJECT_NAME = "Object";
     public static final int MAX_STACK = 30;
     public static final int MAX_LOCALS = 30;

@@ -16,6 +16,7 @@ public class JasminUtil {
         if(isUserDefined(type))
             return "L" + UD(type).getName().getName();
 
+        System.out.println(type.toString());
         assert false;
         return "<BAD TYPE>";
     }

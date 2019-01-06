@@ -12,7 +12,6 @@ import ast.node.expression.Value.IntValue;
 import ast.node.expression.Value.StringValue;
 import ast.node.statement.*;
 import errors.Error;
-import errors.ErrorPhase;
 import errors.classError.ClassRedefinition;
 import errors.classError.UndefinedClass;
 import errors.expressionError.BadArraySize;
@@ -118,6 +117,7 @@ public class VisitorImpl implements Visitor {
 
     @Override
     public void visit(ClassDeclaration classDeclaration) {
+        classDeclaration.setMainClass(mainClassDeclaration == classDeclaration);
         String className = classDeclaration.getName().getName();
         switch (currentPass) {
             case FIND_CLASSES:

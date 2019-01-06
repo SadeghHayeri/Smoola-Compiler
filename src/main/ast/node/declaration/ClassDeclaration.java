@@ -14,6 +14,13 @@ public class ClassDeclaration extends Declaration {
     private ArrayList<MethodDeclaration> methodDeclarations = new ArrayList<>();
     private ClassDeclaration parentClass;
 
+    public void setMainClass(boolean mainClass) {
+        if(mainClass) {
+            assert methodDeclarations.get(0).getName().getName().equals("main");
+            methodDeclarations.get(0).setMainMethod(true);
+        }
+    }
+
     public void setParentClass(ClassDeclaration parentClass) {
         this.parentClass = parentClass;
     }

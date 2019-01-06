@@ -19,6 +19,11 @@ public class MethodDeclaration extends Declaration {
     private ArrayList<VarDeclaration> localVars = new ArrayList<>();
     private ArrayList<Statement> body = new ArrayList<>();
     private ClassDeclaration containerClass;
+    private boolean isMainMethod = false;
+
+    public void setMainMethod(boolean mainMethod) {
+        isMainMethod = mainMethod;
+    }
 
     public void setContainerClass(ClassDeclaration containerClass) {
         this.containerClass = containerClass;
@@ -151,16 +156,29 @@ public class MethodDeclaration extends Declaration {
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
 
-        code.add(new JstartMethod(name.getName(), getArgsType(), returnType));
-        code.add(new Jlimit("stack", Util.MAX_STACK));
-        code.add(new Jlimit("locals", Util.MAX_LOCALS));
+        if(isMainMethod) {
+            ArrayList<Type> fakeArg = new ArrayList<>();
+            code.add(new JstartMethod("static " + name.getName(), "[Ljava/lang/String;", "V"));
+            code.add(new Jlimit("stack", Util.MAX_STACK));
+            code.add(new Jlimit("locals", Util.MAX_LOCALS));
 
-        for(Statement statement : body)
-            code.addAll(statement.toJasmin());
+            for(Statement statement : body)
+                code.addAll(statement.toJasmin());
 
-        code.addAll(returnValue.toJasmin());
-        code.add(new Jreturn(isInt(returnType) || isBoolean(returnType) ? JrefType.i : JrefType.a));
-        code.add(new JendMethod(name.getName()));
+            code.add(new Jreturn(JrefType.VOID));
+            code.add(new JendMethod(name.getName()));
+        } else {
+            code.add(new JstartMethod(name.getName(), getArgsType(), returnType));
+            code.add(new Jlimit("stack", Util.MAX_STACK));
+            code.add(new Jlimit("locals", Util.MAX_LOCALS));
+
+            for(Statement statement : body)
+                code.addAll(statement.toJasmin());
+
+            code.addAll(returnValue.toJasmin());
+            code.add(new Jreturn(isInt(returnType) || isBoolean(returnType) ? JrefType.i : JrefType.a));
+            code.add(new JendMethod(name.getName()));
+        }
 
         return code;
     }

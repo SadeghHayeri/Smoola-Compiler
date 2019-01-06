@@ -1,20 +1,12 @@
 class Test {
 	def main() : int {
-		return 0;
+	    new T().x();
+		return 1 + 2;
 	}
 }
 
-class Test2 {
-	def main() : int {
-	    var x : int;
-	    var ins : X;
-	    ins = new X();
-		return ins.x();
+class T {
+    def x() : int {
+		return 1 + 2;
 	}
-}
-
-class X {
-	def x() : int {
-        return 0;
-    }
 }
