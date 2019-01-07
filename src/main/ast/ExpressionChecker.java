@@ -253,6 +253,7 @@ public class ExpressionChecker {
             String className = UD(instanceType).getName().getName();
             if(classesSymbolTable.containsKey(className)) {
                 SymbolTable classSymbolTable = classesSymbolTable.get(className);
+
                 try {
                     SymbolTableMethodItem  methodItem = (SymbolTableMethodItem)classSymbolTable.get(SymbolTableMethodItem.PREFIX + methodName);
                     ArrayList<Type> argsType = methodItem.getArgTypes();
@@ -265,6 +266,11 @@ public class ExpressionChecker {
                                 return methodItem.getReturnType();
                             }
                         }
+
+                        methodCall.setClassName(className);
+                        methodCall.setArgsType(argsType);
+                        methodCall.setReturnType(methodItem.getReturnType());
+
                         return methodItem.getReturnType();
                     } else ErrorChecker.addError(new ArgsMismatch(methodCall));
                     methodCall.setClassName(className);

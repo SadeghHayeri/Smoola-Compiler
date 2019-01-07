@@ -55,7 +55,6 @@ public class Identifier extends Expression {
 
     public ArrayList<JasminStmt> toStoreJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
-
         code.add(new Jcomment("Start store-identifier"));
         code.addAll(this.containerMethod.setVariableJasmin(this.name));
         code.add(new Jcomment("End store-identifier"));

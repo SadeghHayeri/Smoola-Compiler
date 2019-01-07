@@ -10,7 +10,7 @@ public class MethodCall extends Expression {
     private String className;
     private Expression instance;
     private Identifier methodName;
-    private ArrayList<Type> argsType;
+    private ArrayList<Type> argsType ;
     private Type returnType;
 
     public void setReturnType(Type returnType) {
@@ -69,7 +69,6 @@ public class MethodCall extends Expression {
     @Override
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
-
         code.add(new Jcomment("Start method-call"));
         code.addAll(instance.toJasmin());
         for (Expression arg : args)

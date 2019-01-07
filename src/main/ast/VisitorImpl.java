@@ -46,6 +46,7 @@ public class VisitorImpl implements Visitor {
     private MethodDeclaration currentMethod = null;
     private Passes currentPass;
 
+
     private void addObjectClass(Program program) {
         Identifier objectName = new Identifier(-1, Util.MASTER_OBJECT_NAME);
         ClassDeclaration objectClass = new ClassDeclaration(-1, objectName);
@@ -54,9 +55,10 @@ public class VisitorImpl implements Visitor {
         MethodDeclaration toStringMethod = new MethodDeclaration(-1, toStringName);
         toStringMethod.setReturnType(new StringType());
 
-        Expression returnValue = new StringValue(-1, "Object");
+        Expression returnValue = new StringValue(-1, "\"Object\"");
         toStringMethod.setReturnValue(returnValue);
 
+        objectClass.addMethodDeclaration(toStringMethod);
         objectClass.unSetParentName();
         program.addClass(objectClass);
     }

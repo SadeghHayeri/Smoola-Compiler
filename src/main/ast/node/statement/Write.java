@@ -43,7 +43,7 @@ public class Write extends Statement {
         String haveArrayLabel = JlabelGenarator.unique("have_array");
         String haveIntLabel = JlabelGenarator.unique("have_int");
         String finishLabel = JlabelGenarator.unique("finish");
-
+        code.add(new Jget(JgetType.STATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
         code.addAll(arg.toJasmin());
         code.add(new Jdup());
 
@@ -65,7 +65,7 @@ public class Write extends Statement {
         code.add(new Jgoto(finishLabel));
 
         code.add(new Jlabel(haveIntLabel)); // int
-        code.add(new Jinvoke(JinvokeType.STATIC,"java/util/Arrays", "toString", "[I", "Ljava/lang/String"));
+        code.add(new Jinvoke(JinvokeType.STATIC,"java/util/Arrays", "toString", "[I", "Ljava/lang/String;"));
         code.add(new Jinvoke(JinvokeType.VIRTUAL,"java/io/PrintStream", "println", "Ljava/lang/String;", "V"));
         code.add(new Jgoto(finishLabel));
 

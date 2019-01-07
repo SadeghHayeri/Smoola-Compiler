@@ -37,7 +37,6 @@ public class NewClass extends Expression {
     @Override
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
-
         code.add(new Jcomment("Start new-class"));
         code.add(new Jnew(className.getName()));
         code.add(new Jcomment("End new-class"));

@@ -1,6 +1,6 @@
 class Test {
 	def main() : int {
-	    writeln("salam");
+	    writeln(new T().x());
 		return 1;
 	}
 }
@@ -8,9 +8,11 @@ class Test {
 class T {
     var a : int[];
     var b : int;
+    var r : string;
     def x() : int {
         a = new int[10];
-        b = a[1+4];
+        r = "salam";
+        writeln(r);
 		return b;
 	}
 }

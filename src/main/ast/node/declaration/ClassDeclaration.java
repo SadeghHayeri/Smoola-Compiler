@@ -82,7 +82,7 @@ public class ClassDeclaration extends Declaration {
         for (VarDeclaration currVal : variables) {
             String currVarName = currVal.getIdentifier().getName();
             if (variable.equals(currVarName))
-                return new Jgetfield(name.getName(), variable, currVal.getType());
+                return new Jget(JgetType.FIELD, name.getName(), variable, currVal.getType());
         }
 
         if(parentClass != null) {
