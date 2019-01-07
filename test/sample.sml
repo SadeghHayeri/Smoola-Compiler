@@ -1,12 +1,16 @@
 class Test {
 	def main() : int {
-	    new T().x();
-		return 1 + 2;
+	    writeln("salam");
+		return 1;
 	}
 }
 
 class T {
+    var a : int[];
+    var b : int;
     def x() : int {
-		return 1 + 2;
+        a = new int[10];
+        b = a[1+4];
+		return b;
 	}
 }

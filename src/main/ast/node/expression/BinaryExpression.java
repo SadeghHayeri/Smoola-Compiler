@@ -145,11 +145,10 @@ public class BinaryExpression extends Expression {
                 break;
             case assign:
                 code.addAll(right.toJasmin());
-
                 if(isIdentifier(left))
-                    ID(left).toStoreJasmin();
+                    code.addAll(ID(left).toStoreJasmin());
                 else if(isArrayCall(left))
-                    AC(left).toStoreJasmin();
+                    code.addAll(AC(left).toStoreJasmin());
 
                 code.addAll(left.toJasmin());
                 break;

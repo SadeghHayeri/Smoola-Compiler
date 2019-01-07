@@ -79,7 +79,7 @@ expression returns [Expression exp]
     | THIS                                                              { $exp = new This($THIS.line); }
     | literal                                                           { $exp = $literal.value; }
     | e=expression DOT LENGTH                                           { $exp = new Length($DOT.line, $e.exp); }
-    | e=expression DOT id=IDENTIFIER { MethodCall mc = new MethodCall($DOT.line, $e.exp, _ID($DOT.line, $id.text)); } arguments[mc] { $exp = mc; }
+    | e=expression DOT id=IDENTIFIER                                    { MethodCall mc = new MethodCall($DOT.line, $e.exp, _ID($DOT.line, $id.text)); } arguments[mc] { $exp = mc; }
     | NEW IDENTIFIER LPAREN RPAREN                                      { $exp = new NewClass($NEW.line, _ID($IDENTIFIER.line, $IDENTIFIER.text)); }
     | NEW INT LBRACK expression RBRACK                                  { $exp = new NewArray($NEW.line, $expression.exp); }
     | LPAREN expression RPAREN                                          { $exp = $expression.exp; }

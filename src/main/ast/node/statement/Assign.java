@@ -52,9 +52,9 @@ public class Assign extends Statement {
         code.add(new Jcomment("Start assign-stmt"));
 
         if(isIdentifier(lValue))
-            ID(lValue).toStoreJasmin();
+            code.addAll(ID(lValue).toStoreJasmin());
         else if(isArrayCall(lValue))
-            AC(lValue).toStoreJasmin();
+            code.addAll(AC(lValue).toStoreJasmin());
 
         code.add(new Jcomment("End assign-stmt"));
         return code;
