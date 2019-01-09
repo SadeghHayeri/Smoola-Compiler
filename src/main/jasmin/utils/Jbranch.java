@@ -1,6 +1,9 @@
 package jasmin.utils;
 
 import jasmin.instructions.JasminStmt;
+import jasmin.instructions.Jgoto;
+import jasmin.instructions.Jif;
+import jasmin.instructions.JifOperator;
 
 import java.util.ArrayList;
 
@@ -12,6 +15,9 @@ public class Jbranch {
     }
 
     public ArrayList<JasminStmt> toJasmin() {
-        return null; //TODO complete
+        ArrayList<JasminStmt> code = new ArrayList<>();
+        code.add(new Jif(JifOperator.gt, nTrue));
+        code.add(new Jgoto(nFalse));
+        return code;
     }
 }

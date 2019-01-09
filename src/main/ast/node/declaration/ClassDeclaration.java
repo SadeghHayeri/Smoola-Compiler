@@ -118,6 +118,10 @@ public class ClassDeclaration extends Declaration {
         code.add(new JstartClass(name.getName()));
         code.add(new JsuperClass(parentRef));
 
+
+        for(VarDeclaration varDeclaration : getVarDeclarations())
+            code.addAll(varDeclaration.toJasmin());
+
         // constructor
         code.add(new JstartMethod("<init>", "", "V"));
         code.add(new Jload(JrefType.a, 0));

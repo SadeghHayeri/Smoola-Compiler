@@ -19,7 +19,7 @@ public class Jinvoke extends JasminStmt {
         this.returnType = JasminUtil.toJasminType(returnType);
         this.args = "";
         for(Type type : argsType)
-            this.args += (JasminUtil.toJasminType(type) + "; ");
+            this.args += (JasminUtil.toJasminType(type));
     }
 
     public Jinvoke(JinvokeType invokeType, String className, String methodName, String args, String returnType) {

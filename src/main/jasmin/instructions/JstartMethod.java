@@ -5,8 +5,6 @@ import jasmin.utils.JasminUtil;
 
 import java.util.ArrayList;
 
-import static ast.TypeChecker.isString;
-
 public class JstartMethod extends JasminStmt {
     private String name;
     private String args;
@@ -15,11 +13,9 @@ public class JstartMethod extends JasminStmt {
     public JstartMethod(String methodName, ArrayList<Type> args, Type returnType) {
         this.name = methodName;
         this.returnType = JasminUtil.toJasminType(returnType);
-        if(isString(returnType))
-            this.returnType += ";";
         this.args = "";
         for(Type type : args)
-            this.args += (JasminUtil.toJasminType(type) + ";");
+            this.args += (JasminUtil.toJasminType(type));
     }
 
     public JstartMethod(String methodName, String args, String returnType) {

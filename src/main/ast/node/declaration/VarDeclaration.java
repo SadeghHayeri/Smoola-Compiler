@@ -3,6 +3,8 @@ package ast.node.declaration;
 import ast.Type.Type;
 import ast.Visitor;
 import ast.node.expression.Identifier;
+import jasmin.instructions.*;
+import java.util.ArrayList;
 
 public class VarDeclaration extends Declaration {
     private Identifier identifier;
@@ -43,5 +45,13 @@ public class VarDeclaration extends Declaration {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+
+    @Override
+    public ArrayList<JasminStmt> toJasmin() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+        code.add(new Jfield(identifier.getName(), type));
+        return code;
     }
 }

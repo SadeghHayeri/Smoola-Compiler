@@ -85,12 +85,12 @@ expression returns [Expression exp]
     | LPAREN expression RPAREN                                          { $exp = $expression.exp; }
     | e1=expression LBRACK e2=expression RBRACK                         { $exp = new ArrayCall($LBRACK.line, $e1.exp, $e2.exp); }
     | uop=(BANG | MINUS) expression                                     { $exp = new UnaryExpression($uop.line, $uop.text.equals("!") ? UnaryOperator.not : UnaryOperator.minus, $expression.exp); }
-    | <assoc=right> e1=expression bop=(STAR | SLASH) e2=expression      { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("*") ? BinaryOperator.mult : BinaryOperator.div); }
-    | <assoc=right> e1=expression bop=(PLUS | MINUS) e2=expression      { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("+") ? BinaryOperator.add : BinaryOperator.sub); }
-    | <assoc=right> e1=expression bop=(GT | LT) e2=expression           { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals(">") ? BinaryOperator.gt : BinaryOperator.lt); }
-    | <assoc=right> e1=expression bop=(EQUAL | NOTEQUAL) e2=expression  { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("==") ? BinaryOperator.eq : BinaryOperator.neq); }
-    | <assoc=right> e1=expression bop=AND e2=expression                 { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, BinaryOperator.and); }
-    | <assoc=right> e1=expression bop=OR e2=expression                  { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, BinaryOperator.or); }
+    | e1=expression bop=(STAR | SLASH) e2=expression      { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("*") ? BinaryOperator.mult : BinaryOperator.div); }
+    | e1=expression bop=(PLUS | MINUS) e2=expression      { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("+") ? BinaryOperator.add : BinaryOperator.sub); }
+    | e1=expression bop=(GT | LT) e2=expression           { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals(">") ? BinaryOperator.gt : BinaryOperator.lt); }
+    | e1=expression bop=(EQUAL | NOTEQUAL) e2=expression  { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, $bop.text.equals("==") ? BinaryOperator.eq : BinaryOperator.neq); }
+    | e1=expression bop=AND e2=expression                 { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, BinaryOperator.and); }
+    | e1=expression bop=OR e2=expression                  { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, BinaryOperator.or); }
     | <assoc=right> e1=expression bop=ASSIGN e2=expression              { $exp = new BinaryExpression($bop.line, $e1.exp, $e2.exp, BinaryOperator.assign); }
     ;
 

@@ -403,6 +403,7 @@ public class VisitorImpl implements Visitor {
                 break;
             case FILL_SYMBOL_TABLE:
                 Type insideType = getExpType(classesDeclaration, classesSymbolTable, write.getArg());
+                write.getArg().setExpressionType(insideType);
                 boolean validInsideType = isInt(insideType) || isString(insideType) || isArray(insideType) || isNoType(insideType);
                 if(!validInsideType)
                     ErrorChecker.addError(new BadWritelnType(write));

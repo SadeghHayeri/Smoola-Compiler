@@ -53,14 +53,13 @@ public class UnaryExpression extends Expression {
         String putTrueLabel = JlabelGenarator.unique("put_true");
         String putFalseLabel = JlabelGenarator.unique("put_false");
         String finishLabel = JlabelGenarator.unique("finish");
+//        System.out.println(finishLabel);
 
         switch (unaryOperator) {
             case minus:
-                code.addAll(value.toJasmin());
                 code.add(new Jarithmetic(JarithmaticOperator.minus));
                 break;
             case not:
-                code.addAll(value.toJasmin());
                 code.add(new Jif(JifOperator.ge, putFalseLabel));
                 code.add(new Jgoto(putTrueLabel));
                 break;
@@ -74,8 +73,8 @@ public class UnaryExpression extends Expression {
 
         code.add(new Jlabel(putFalseLabel));
         code.add(new Jpush(false));
-        code.add(new Jgoto(finishLabel));
-
+//        code.add(new Jgoto(finishLabel));
+        code.add(new Jlabel(finishLabel));
         code.add(new Jcomment("End unary-exp"));
 
         return code;

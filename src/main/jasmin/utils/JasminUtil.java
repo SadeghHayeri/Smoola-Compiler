@@ -10,11 +10,11 @@ public class JasminUtil {
         if(isInt(type))
             return "I";
         if(isString(type))
-            return "Ljava/lang/String";
+            return "Ljava/lang/String;";
         if(isArray(type))
             return "[I";
         if(isUserDefined(type))
-            return "L" + UD(type).getName().getName();
+            return "L" + UD(type).getName().getName() + ";";
 
         System.out.println(type.toString());
         assert false;

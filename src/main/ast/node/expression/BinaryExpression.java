@@ -87,8 +87,8 @@ public class BinaryExpression extends Expression {
                 if(isBoolean(sidesType) || isInt(sidesType)) {
                     code.addAll(left.toJasmin());
                     code.addAll(right.toJasmin());
-                    code.add(new Jif_icmp(JrefType.i, JifOperator.eq, putFalseLabel));
-                    code.add(new Jgoto(putTrueLabel));
+                    code.add(new Jif_icmp(JrefType.i, JifOperator.ne, putTrueLabel));
+                    code.add(new Jgoto(putFalseLabel));
                 } else {
                     code.addAll(left.toJasmin());
                     code.addAll(right.toJasmin());
@@ -100,14 +100,13 @@ public class BinaryExpression extends Expression {
             case gt:
                 code.addAll(left.toJasmin());
                 code.addAll(right.toJasmin());
-                code.add(new Jif_icmp(JrefType.i, JifOperator.gt, putTrueLabel));
-                code.add(new Jgoto(putFalseLabel));
+                code.add(new Jarithmetic(JarithmaticOperator.sub));
                 break;
             case lt:
                 code.addAll(left.toJasmin());
                 code.addAll(right.toJasmin());
-                code.add(new Jif_icmp(JrefType.i, JifOperator.lt, putTrueLabel));
-                code.add(new Jgoto(putFalseLabel));
+                code.add(new Jswap());
+                code.add(new Jarithmetic(JarithmaticOperator.sub));
                 break;
             case or:
                 code.addAll(left.toJasmin());

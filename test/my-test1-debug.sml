@@ -1,4 +1,7 @@
 class b {
+    def main() : int {
+        return 0;
+    }
 }
 
 class IDENTIFIER {

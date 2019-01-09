@@ -53,7 +53,7 @@ public class While extends Statement {
         code.add(new Jcomment("Start while"));
         code.add(new Jlabel(nStart));
         code.addAll(getCondition().toJasmin());
-        code.add(new Jif(JifOperator.eq, nExit));
+        code.add(new Jif(JifOperator.le, nExit));
 
         code.addAll(getBody().toJasmin());
         code.add(new Jgoto(nStart));
