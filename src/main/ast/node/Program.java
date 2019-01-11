@@ -47,7 +47,7 @@ public class Program extends Node {
                 for(JasminStmt jasminStmt : classDeclaration.toJasmin()) {
                     if(jasminStmt instanceof JstartClass || jasminStmt instanceof JsuperClass)
                         writer.println(jasminStmt.toString());
-                    else if(jasminStmt instanceof JstartMethod || jasminStmt instanceof JendMethod || jasminStmt instanceof Jlabel)
+                    else if(jasminStmt instanceof Jfield || jasminStmt instanceof JstartMethod || jasminStmt instanceof JendMethod || jasminStmt instanceof Jlabel)
                         writer.println("\t" + jasminStmt.toString());
                     else
                         writer.println("\t\t" +jasminStmt.toString());
