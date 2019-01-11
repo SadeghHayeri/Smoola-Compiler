@@ -2,10 +2,17 @@ package ast.node.declaration;
 
 import ast.Util;
 import ast.Visitor;
+import ast.node.expression.BinaryExpression;
+import ast.node.expression.BinaryOperator;
 import ast.node.expression.Identifier;
+import ast.node.expression.Value.StringValue;
+import ast.node.statement.Assign;
+import ast.node.statement.Statement;
 import jasmin.instructions.*;
 
 import java.util.ArrayList;
+
+import static ast.TypeChecker.*;
 
 public class ClassDeclaration extends Declaration {
     private Identifier name;
@@ -109,6 +116,24 @@ public class ClassDeclaration extends Declaration {
         return null;
     }
 
+    private ArrayList<JasminStmt> initialFields() {
+        ArrayList<JasminStmt> code = new ArrayList<>();
+
+        for(VarDeclaration varDeclaration : varDeclarations) {
+            if(isInt(varDeclaration.getType()) || isBoolean(varDeclaration.getType())) {
+                code.add(new Jload(JrefType.a, 0));
+                code.add(new Jpush(0));
+            } else if(isString(varDeclaration.getType())) {
+                code.add(new Jload(JrefType.a, 0));
+                code.add(new Jpush("\"\""));
+            } else
+                continue;
+            code.add(this.setVariableJasmin(varDeclaration.getIdentifier().getName()));
+        }
+
+        return code;
+    }
+
     @Override
     public ArrayList<JasminStmt> toJasmin() {
         ArrayList<JasminStmt> code = new ArrayList<>();
@@ -124,8 +149,11 @@ public class ClassDeclaration extends Declaration {
 
         // constructor
         code.add(new JstartMethod("<init>", "", "V"));
+        code.add(new Jlimit("stack", Util.MAX_STACK));
+        code.add(new Jlimit("locals", Util.MAX_LOCALS));
         code.add(new Jload(JrefType.a, 0));
         code.add(new Jinvoke(JinvokeType.SPECIAL, parentRef, "<init>", "", "V"));
+        code.addAll(initialFields());
         code.add(new Jreturn(JrefType.VOID));
         code.add(new JendMethod("<init>"));
 

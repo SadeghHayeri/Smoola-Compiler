@@ -3,20 +3,19 @@ package jasmin.instructions;
 import ast.Type.Type;
 import jasmin.utils.JasminUtil;
 
-import static ast.TypeChecker.isString;
+import static ast.TypeChecker.*;
 
 public class Jfield extends JasminStmt {
     private String name;
-    private String type;
+    private Type type;
 
     public Jfield(String filedName, Type filedType) {
         this.name = filedName;
-        this.type = JasminUtil.toJasminType(filedType);
+        this.type = filedType;
     }
-
 
     @Override
     public String toString() {
-        return ".field protected " + name + " " + type;
+        return ".field protected " + name + " " + JasminUtil.toJasminType(type);
     }
 }
