@@ -1,12 +1,15 @@
-class Test {
-	def func(arg1 : int, arg2 : int) : int {
-	    var x : int;
-	    var y : MYclass;
+class RunThis {
+    def main() : int {
+        new XXX().main(0);
+        return 0;
+    }
+}
 
-	    a == b;
-	    if(a / b) then;
-		return 0;
-
-		while(true) {};
-	}
+class XXX {
+    var xxx : string;
+    var i : int;
+	def main(x : int) : int {
+	    writeln(xxx);
+	    return 0;
+    }
 }
